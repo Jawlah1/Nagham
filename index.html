@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-accent="gold">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>نغم</title>
+<meta name="description" content="مشغل موسيقى أنيق يعمل في الخلفية">
+<meta name="theme-color" content="#0a0a0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="نغم">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0c; --bg2:#111115; --card:#16161b; --card2:#1e1e25; --line:rgba(255,255,255,.07);
+  --text:#f4f1ea; --mute:#9b968d; --dim:#6b675f;
+  --acc:#e9b660; --acc2:#f7d894; --accInk:#1c1306; --accGlow:rgba(233,182,96,.28);
+  --danger:#ff6b5e;
+  --tabH:60px; --safeB:env(safe-area-inset-bottom); --safeT:env(safe-area-inset-top);
+  --miniH:62px;
+  --r:16px;
+  --font:'IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'SF Arabic','Segoe UI',Tahoma,sans-serif;
+}
+[data-accent=coral]{--acc:#ff7d5c;--acc2:#ffb49c;--accInk:#1f0a04;--accGlow:rgba(255,125,92,.28)}
+[data-accent=teal]{--acc:#41d1b7;--acc2:#9ff0e0;--accInk:#03201b;--accGlow:rgba(65,209,183,.25)}
+[data-accent=violet]{--acc:#a88bff;--acc2:#d6c9ff;--accInk:#140b2b;--accGlow:rgba(168,139,255,.28)}
+[data-accent=rose]{--acc:#ff7aa2;--acc2:#ffc1d3;--accInk:#2a0712;--accGlow:rgba(255,122,162,.26)}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+body{overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+input,textarea{user-select:text;-webkit-user-select:text}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+img{display:block}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.f{fill:currentColor;stroke:none}
+.hidden{display:none!important}
+
+#app{position:fixed;inset:0;z-index:1;background:var(--bg)}
+.view{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
+  padding:calc(var(--safeT) + 14px) 18px calc(var(--tabH) + var(--safeB) + var(--miniH) + 34px);display:none}
+.view.active{display:block;animation:fade .28s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+body.nomini .view{padding-bottom:calc(var(--tabH) + var(--safeB) + 28px)}
+
+/* Headings */
+.eyebrow{color:var(--mute);font-size:14px;font-weight:500;margin:4px 0 2px}
+h1.lt{font-size:32px;font-weight:700;margin:0 0 18px;letter-spacing:-.3px;line-height:1.25}
+.sec{display:flex;align-items:center;justify-content:space-between;margin:26px 0 10px}
+.sec h2{font-size:19px;font-weight:700;margin:0}
+.link{color:var(--acc);font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:6px 2px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+/* Buttons */
+.ib{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--text);flex:none;transition:transform .15s,background .2s}
+.ib:active{transform:scale(.9);background:rgba(255,255,255,.06)}
+.ib.soft{background:var(--card2)}
+.ib.acc{background:var(--acc);color:var(--accInk)}
+.btn{height:46px;border-radius:23px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;background:var(--card2);transition:transform .15s,opacity .2s}
+.btn:active{transform:scale(.96)}
+.btn.pri{background:linear-gradient(135deg,var(--acc2),var(--acc));color:var(--accInk);box-shadow:0 8px 24px var(--accGlow)}
+.btn.sm{height:36px;font-size:13.5px;padding:0 14px}
+.btn.danger{color:var(--danger)}
+.btn svg.i{width:20px;height:20px}
+
+/* Rows */
+.list{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:8px 6px;margin:0 -6px;border-radius:14px;position:relative;transition:background .2s}
+.row:active{background:rgba(255,255,255,.04)}
+.row .num{width:22px;text-align:center;color:var(--dim);font-size:14px;font-weight:600;flex:none;font-variant-numeric:tabular-nums}
+.row .th{width:52px;height:52px;border-radius:10px;overflow:hidden;background:var(--card2);flex:none;position:relative}
+.row .th img{width:100%;height:100%;object-fit:cover}
+.row.wide .th{width:136px;height:77px;border-radius:12px}
+.row .dur{position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,.78);font-size:11px;font-weight:600;padding:1px 6px;border-radius:6px;direction:ltr}
+.row .meta{flex:1;min-width:0}
+.row .t{font-size:15px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.row:not(.wide) .t{-webkit-line-clamp:1;white-space:nowrap;text-overflow:ellipsis;display:block}
+.row .s{font-size:13px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.now .t{color:var(--acc)}
+.row .ib{width:36px;height:36px;color:var(--mute)}
+.row .grip{width:36px;height:40px;display:grid;place-items:center;color:var(--dim);touch-action:none}
+.row.drag{z-index:5;background:var(--card2);box-shadow:0 12px 30px rgba(0,0,0,.5);transition:none}
+.thnow{position:absolute;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:14px}
+.eq i{width:3px;background:var(--acc);border-radius:2px;height:4px}
+body.is-playing .eq i{animation:eq .9s ease-in-out infinite}
+.eq i:nth-child(2){animation-delay:-.3s!important}.eq i:nth-child(3){animation-delay:-.6s!important}
+@keyframes eq{0%,100%{height:4px}50%{height:14px}}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.empty{text-align:center;padding:44px 20px;color:var(--mute)}
+.empty .ico{width:74px;height:74px;border-radius:24px;margin:0 auto 16px;display:grid;place-items:center;background:linear-gradient(145deg,var(--card2),var(--card));border:1px solid var(--line);color:var(--acc)}
+.empty .ico svg{width:34px;height:34px}
+.empty h3{color:var(--text);font-size:18px;margin:0 0 6px}
+.empty p{margin:0 0 18px;font-size:14px;line-height:1.7}
+
+/* Home */
+.hero{position:relative;border-radius:22px;overflow:hidden;padding:18px;display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);margin-bottom:6px}
+.hero .bgi{position:absolute;inset:-30px;background-size:cover;background-position:center;filter:blur(34px) saturate(1.4);opacity:.45}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,10,12,.2),rgba(10,10,12,.75))}
+.hero>*{position:relative;z-index:1}
+.hero .hth{width:72px;height:72px;border-radius:14px;overflow:hidden;flex:none;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+.hero .hth img{width:100%;height:100%;object-fit:cover}
+.hero .hm{flex:1;min-width:0}
+.hero small{color:var(--acc2);font-size:12px;font-weight:600}
+.hero b{display:block;font-size:16px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero span{display:block;font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero .ib{width:50px;height:50px}
+.hscroll{display:flex;gap:14px;overflow-x:auto;margin:0 -18px;padding:2px 18px 6px;scrollbar-width:none;scroll-snap-type:x mandatory}
+.hscroll::-webkit-scrollbar{display:none}
+.plc{width:132px;flex:none;scroll-snap-align:start}
+.plc .cv{width:132px;height:132px;border-radius:16px}
+.plc b{display:block;font-size:14px;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plc span{font-size:12px;color:var(--mute)}
+
+/* Covers */
+.cv{position:relative;overflow:hidden;background:linear-gradient(145deg,#2a2a33,#15151a);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:none}
+.cv img{width:100%;height:100%;object-fit:cover}
+.cv.one{display:block}
+.cv .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--acc)}
+.cv .ph svg{width:40%;height:40%}
+.cv.fav{background:linear-gradient(145deg,var(--acc2),var(--acc) 55%,#6b3f10)}
+.cv.fav .ph{color:var(--accInk)}
+
+/* Search */
+#v-search h1.lt{margin-bottom:calc(var(--safeT) + 6px)}
+.sbarW{position:sticky;top:0;margin:calc(-1 * var(--safeT)) -18px 0;padding:calc(var(--safeT) + 6px) 18px 10px;z-index:5;background:linear-gradient(var(--bg) 78%,rgba(10,10,12,0));}
+form.sbar{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:0 12px;height:48px;transition:border-color .2s}
+form.sbar:focus-within{border-color:var(--acc)}
+form.sbar>svg{color:var(--mute)}
+form.sbar input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--text);font:inherit;font-size:16px;height:100%}
+form.sbar input::placeholder{color:var(--dim)}
+form.sbar input::-webkit-search-cancel-button{display:none}
+form.sbar .ib{width:32px;height:32px;color:var(--mute)}
+#sugg{margin-top:6px}
+.sg{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line);font-size:15px}
+.sg svg{color:var(--dim);width:18px;height:18px}
+.sg span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:36px;padding:0 14px;border-radius:18px;background:var(--card2);border:1px solid var(--line);font-size:14px;display:inline-flex;align-items:center;gap:6px;max-width:100%}
+.chip span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{height:84px;border-radius:16px;padding:14px;display:flex;align-items:flex-end;font-weight:700;font-size:16px;position:relative;overflow:hidden;text-align:start}
+.tile::after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.12);left:-24px;top:-30px}
+.tile:active{transform:scale(.97)}
+.skel{background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:sk 1.3s infinite;border-radius:10px}
+@keyframes sk{from{background-position:200% 0}to{background-position:-200% 0}}
+.srow{display:flex;gap:12px;align-items:center;padding:8px 0}
+.note{font-size:13px;color:var(--mute);line-height:1.8}
+.errbox{padding:22px;text-align:center}
+.plhead{display:flex;gap:14px;align-items:center;padding:14px;margin-bottom:10px}
+.plhead .cv{width:84px;height:84px;border-radius:14px}
+
+/* Library */
+.lrow{display:flex;align-items:center;gap:14px;padding:9px 0}
+.lrow .cv{width:64px;height:64px;border-radius:14px}
+.lrow .meta{flex:1;min-width:0}
+.lrow b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow span{font-size:13px;color:var(--mute)}
+.lrow>svg{color:var(--dim)}
+.lrow:active{opacity:.7}
+
+/* Playlist view */
+.plv-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.plv-cover{width:210px;height:210px;border-radius:22px;margin:6px auto 18px;box-shadow:0 24px 60px rgba(0,0,0,.55)}
+.plv-name{text-align:center;font-size:24px;font-weight:700;margin:0}
+.plv-meta{text-align:center;color:var(--mute);font-size:13.5px;margin:6px 0 18px}
+.plv-acts{display:flex;gap:10px;justify-content:center;margin-bottom:14px}
+.plv-acts .btn{flex:1;max-width:170px}
+
+/* Settings */
+.grp{margin-bottom:22px}
+.grp>h3{font-size:13px;color:var(--mute);font-weight:600;margin:0 6px 8px}
+.grp .card{overflow:hidden}
+.set{display:flex;align-items:center;gap:12px;padding:13px 14px;min-height:54px;border-bottom:1px solid var(--line)}
+.set:last-child{border-bottom:0}
+.set .si{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--card2);color:var(--acc);flex:none}
+.set .si svg{width:18px;height:18px}
+.set .sl{flex:1;min-width:0}
+.set .sl b{display:block;font-size:15px;font-weight:600}
+.set .sl small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px;line-height:1.55}
+.set.col{flex-direction:column;align-items:stretch}
+.set.col .top{display:flex;align-items:center;gap:12px}
+.set input.tx{width:100%;height:42px;border-radius:11px;background:var(--bg2);border:1px solid var(--line);color:var(--text);padding:0 12px;font:inherit;font-size:16px;outline:0;direction:ltr;text-align:left}
+.set input.tx.rtl{direction:rtl;text-align:right}
+.set input.tx:focus{border-color:var(--acc)}
+.set.tap:active{background:rgba(255,255,255,.03)}
+.tg{width:50px;height:30px;border-radius:15px;background:#3a3a44;position:relative;flex:none;transition:background .25s}
+.tg::after{content:"";position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .25s cubic-bezier(.3,.7,.3,1.2);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.tg.on{background:var(--acc)}
+.tg.on::after{transform:translateX(-20px)}
+.seg{display:flex;background:var(--bg2);border-radius:11px;padding:3px;gap:3px;margin-top:10px}
+.seg button{flex:1;height:34px;border-radius:9px;font-size:13px;font-weight:600;color:var(--mute);transition:background .2s,color .2s}
+.seg button.on{background:var(--card2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.sw{display:flex;gap:12px;margin-top:12px}
+.sw button{width:34px;height:34px;border-radius:50%;border:2px solid transparent;box-shadow:inset 0 0 0 3px var(--bg)}
+.sw button.on{border-color:var(--text)}
+.testout{font-size:12.5px;line-height:1.9;color:var(--mute);margin-top:10px;direction:rtl}
+.testout .ok{color:#6fd99a}.testout .bad{color:var(--danger)}
+.install{display:flex;gap:12px;align-items:center;padding:14px;margin-bottom:20px;background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.01));}
+.install img{width:54px;height:54px;border-radius:13px}
+.install b{font-size:15px}
+.install p{margin:3px 0 0;font-size:12.5px;color:var(--mute);line-height:1.7}
+
+/* Tabs */
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;height:calc(var(--tabH) + var(--safeB));padding-bottom:var(--safeB);display:flex;
+  background:rgba(12,12,15,.82);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);border-top:1px solid var(--line)}
+#tabs button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--dim);font-size:11px;font-weight:600;transition:color .2s}
+#tabs button.on{color:var(--acc)}
+#tabs button svg{width:24px;height:24px}
+
+/* Mini player */
+#mini{position:fixed;left:8px;right:8px;bottom:calc(var(--tabH) + var(--safeB) + 8px);height:var(--miniH);z-index:21;border-radius:16px;overflow:hidden;
+  display:flex;align-items:center;gap:11px;padding:0 8px 0 6px;background:rgba(32,32,39,.86);backdrop-filter:blur(26px) saturate(1.5);-webkit-backdrop-filter:blur(26px) saturate(1.5);
+  border:1px solid rgba(255,255,255,.08);box-shadow:0 10px 30px rgba(0,0,0,.45);transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .3s}
+#mini.hidden{display:flex!important;transform:translateY(140%);opacity:0;pointer-events:none}
+#mini .mimg{width:48px;height:48px;border-radius:10px;overflow:hidden;flex:none;margin-right:4px;background:var(--card2)}
+#mini .mimg img{width:100%;height:100%;object-fit:cover}
+#mini .mm{flex:1;min-width:0}
+#mini .mm div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mTitle{font-size:14.5px;font-weight:600}
+#mArtist{font-size:12.5px;color:var(--mute)}
+#mini .ib{width:42px;height:42px}
+#mini .ib svg{width:24px;height:24px}
+.mprog{position:absolute;left:12px;right:12px;bottom:0;height:2px;background:rgba(255,255,255,.08);direction:ltr}
+.mprog i{display:block;height:100%;width:0;background:var(--acc);border-radius:2px}
+
+/* Full player */
+#fp{position:fixed;inset:0;z-index:40;background:#08080a;transform:translateY(100%);transition:transform .42s cubic-bezier(.2,.85,.2,1),visibility 0s linear .42s;overflow:hidden;visibility:hidden}
+#fp.open{transform:none;visibility:visible;transition:transform .42s cubic-bezier(.2,.85,.2,1),visibility 0s}
+.fpbg{position:absolute;inset:0;overflow:hidden}
+.fpbg img{position:absolute;inset:-25%;width:150%;height:150%;object-fit:cover;filter:blur(60px) saturate(1.6) brightness(.75);opacity:.75;transform:scale(1.1)}
+.fpbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,8,10,.35) 0%,rgba(8,8,10,.55) 45%,rgba(8,8,10,.94) 100%)}
+.fpin{position:relative;height:100%;display:flex;flex-direction:column;padding:calc(var(--safeT) + 8px) 24px calc(var(--safeB) + 18px);max-width:520px;margin:0 auto}
+.fptop{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:4px}
+.fpsrc{text-align:center;min-width:0;flex:1}
+.fpsrc small{display:block;font-size:11px;color:rgba(255,255,255,.55);font-weight:500;letter-spacing:.3px}
+.fpsrc b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fpart{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;padding:10px 0}
+.art{width:min(100%,46vh,440px);aspect-ratio:1;border-radius:22px;overflow:hidden;position:relative;background:var(--card2);box-shadow:0 30px 70px rgba(0,0,0,.6);transition:transform .45s cubic-bezier(.3,.7,.3,1.15)}
+.art img{position:absolute;top:50%;left:50%;height:133.5%;width:auto;max-width:none;transform:translate(-50%,-50%)}
+body:not(.is-playing) #fp .art{transform:scale(.88)}
+.artload{position:absolute;inset:0;display:none;place-items:center;background:rgba(0,0,0,.35)}
+body.loading .artload{display:grid}
+.spin{width:38px;height:38px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top-color:var(--acc);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ythint{margin-top:12px;font-size:13px;color:var(--acc2);display:none;text-align:center}
+body.yt-tap .ythint{display:block}
+.fpmeta{display:flex;align-items:center;gap:10px;margin-top:6px}
+.fpmeta .tt{flex:1;min-width:0}
+#fpTitle{font-size:21px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#fpArtist{font-size:15px;color:rgba(255,255,255,.62);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#fpFav.on{color:var(--acc)}
+.seek{margin-top:16px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0;--p:0%}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--acc) var(--p),rgba(255,255,255,.18) var(--p))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:#fff;margin-top:-5px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+input[type=range]::-moz-range-track{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--acc) var(--p),rgba(255,255,255,.18) var(--p))}
+input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:#fff;border:0}
+.times{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;font-variant-numeric:tabular-nums}
+.ctrls{display:flex;align-items:center;justify-content:space-between;margin:14px -6px 6px}
+.ctrls .ib{width:52px;height:52px}
+.ctrls .ib svg{width:30px;height:30px}
+.ctrls .sm svg{width:23px;height:23px;color:rgba(255,255,255,.6)}
+.ctrls .sm.on svg{color:var(--acc)}
+.ctrls .sm{position:relative}
+.ctrls .sm.on::after{content:"";position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--acc)}
+#bPlay{width:78px;height:78px;background:linear-gradient(145deg,var(--acc2),var(--acc));color:var(--accInk);box-shadow:0 14px 34px var(--accGlow)}
+#bPlay svg{width:34px;height:34px}
+.fpbot{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.fpbot .ib{width:46px;height:46px;color:rgba(255,255,255,.7);position:relative}
+.fpbot .ib.on{color:var(--acc)}
+#sleepLbl{position:absolute;top:-2px;right:-6px;font-size:10px;font-weight:700;background:var(--acc);color:var(--accInk);border-radius:8px;padding:0 5px;line-height:16px}
+#sleepLbl:empty{display:none}
+
+/* YouTube host (fallback engine) */
+#ytHost{position:fixed;left:0;bottom:0;width:220px;height:220px;opacity:.001;pointer-events:none;z-index:0;overflow:hidden;border-radius:22px}
+#ytHost.tap{opacity:1;pointer-events:auto;z-index:45;box-shadow:0 30px 70px rgba(0,0,0,.6)}
+#ytHost iframe{width:100%;height:100%;border:0}
+
+/* Sheets / modal */
+#sheetWrap{position:fixed;inset:0;z-index:60;pointer-events:none}
+#sheetWrap .bd{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity .3s}
+#sheetWrap.open{pointer-events:auto}
+#sheetWrap.open .bd{opacity:1}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:86vh;display:flex;flex-direction:column;background:#17171c;border-radius:24px 24px 0 0;border-top:1px solid rgba(255,255,255,.08);
+  transform:translateY(100%);transition:transform .38s cubic-bezier(.2,.85,.2,1);padding-bottom:calc(var(--safeB) + 10px);max-width:560px;margin:0 auto}
+#sheetWrap.open .sheet{transform:none}
+.grab{width:38px;height:5px;border-radius:3px;background:rgba(255,255,255,.2);margin:9px auto 6px;flex:none}
+.shead{display:flex;align-items:center;gap:12px;padding:6px 18px 12px;border-bottom:1px solid var(--line);flex:none}
+.shead .th{width:48px;height:48px;border-radius:10px;overflow:hidden;flex:none}
+.shead .th img{width:100%;height:100%;object-fit:cover}
+.shead .m{flex:1;min-width:0}
+.shead b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shead span{font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.shead h3{margin:0;font-size:17px;flex:1}
+.sbody{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 18px 4px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;padding:14px 4px;font-size:15.5px;text-align:start;border-bottom:1px solid var(--line)}
+.opt:last-child{border-bottom:0}
+.opt svg{color:var(--mute)}
+.opt.danger,.opt.danger svg{color:var(--danger)}
+.opt.on{color:var(--acc)}.opt.on svg{color:var(--acc)}
+.opt:active{opacity:.6}
+.qlabel{font-size:13px;color:var(--mute);font-weight:600;margin:14px 0 4px;display:flex;justify-content:space-between;align-items:center}
+#modal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#modal.open{display:flex;animation:fade .2s}
+.mbox{width:100%;max-width:360px;background:#1b1b21;border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:22px}
+.mbox h3{margin:0 0 6px;font-size:18px}
+.mbox p{margin:0 0 14px;color:var(--mute);font-size:14px;line-height:1.7}
+.mbox input{width:100%;height:48px;border-radius:13px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font:inherit;font-size:16px;padding:0 14px;outline:0;margin-bottom:16px}
+.mbox input:focus{border-color:var(--acc)}
+.mbox .acts{display:flex;gap:10px}
+.mbox .acts .btn{flex:1}
+#toast{position:fixed;left:50%;bottom:calc(var(--tabH) + var(--safeB) + var(--miniH) + 22px);transform:translate(-50%,20px);z-index:90;background:rgba(40,40,48,.96);border:1px solid rgba(255,255,255,.08);
+  padding:11px 18px;border-radius:14px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:all .3s;max-width:calc(100% - 40px);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body class="nomini">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 10.2 12 3.5l8.5 6.7V19a1.5 1.5 0 0 1-1.5 1.5h-4.2v-5.8H9.2v5.8H5A1.5 1.5 0 0 1 3.5 19z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.3-4.3"/></symbol>
+    <symbol id="i-lib" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="4" height="17" rx="1"/><rect x="9.5" y="3.5" width="4" height="17" rx="1"/><path d="m16 4.6 3.8-1 3 16.2-3.8 1z" transform="translate(-2 0)"/></symbol>
+    <symbol id="i-set" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7.5 4.8v14.4a1.2 1.2 0 0 0 1.8 1l11.6-7.2a1.2 1.2 0 0 0 0-2L9.3 3.8a1.2 1.2 0 0 0-1.8 1z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="5.5" y="4" width="4.6" height="16" rx="1.4"/><rect x="13.9" y="4" width="4.6" height="16" rx="1.4"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M4.5 5.6v12.8a1.1 1.1 0 0 0 1.7.9l9.3-6.4a1.1 1.1 0 0 0 0-1.8L6.2 4.7a1.1 1.1 0 0 0-1.7.9z"/><rect x="16.8" y="4.5" width="2.8" height="15" rx="1.4"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><g transform="matrix(-1 0 0 1 24 0)"><path d="M4.5 5.6v12.8a1.1 1.1 0 0 0 1.7.9l9.3-6.4a1.1 1.1 0 0 0 0-1.8L6.2 4.7a1.1 1.1 0 0 0-1.7.9z"/><rect x="16.8" y="4.5" width="2.8" height="15" rx="1.4"/></g></symbol>
+    <symbol id="i-shuf" viewBox="0 0 24 24"><path d="M3 7h3.2a4 4 0 0 1 3.3 1.8l4.8 7A4 4 0 0 0 17.6 17H21"/><path d="M3 17h3.2a4 4 0 0 0 3.3-1.8l.5-.7M14 8.5l.3-.5A4 4 0 0 1 17.6 7H21"/><path d="m18.2 4.2 2.8 2.8-2.8 2.8M18.2 14.2l2.8 2.8-2.8 2.8"/></symbol>
+    <symbol id="i-rep" viewBox="0 0 24 24"><path d="m17 2.8 3 3-3 3"/><path d="M4 11V9.5a3.7 3.7 0 0 1 3.7-3.7H20"/><path d="m7 21.2-3-3 3-3"/><path d="M20 13v1.5a3.7 3.7 0 0 1-3.7 3.7H4"/></symbol>
+    <symbol id="i-rep1" viewBox="0 0 24 24"><path d="m17 2.8 3 3-3 3"/><path d="M4 11V9.5a3.7 3.7 0 0 1 3.7-3.7H20"/><path d="m7 21.2-3-3 3-3"/><path d="M20 13v1.5a3.7 3.7 0 0 1-3.7 3.7H4"/><path d="M11 10.5 12.4 9.6v5"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.3s-7.6-4.6-9.5-9.3C1 7.4 3.3 4.2 6.7 4.2c2.1 0 3.6 1.1 5.3 3 1.7-1.9 3.2-3 5.3-3 3.4 0 5.7 3.2 4.2 6.8-1.9 4.7-9.5 9.3-9.5 9.3z"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.7" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m5.5 9 6.5 6.5L18.5 9"/></symbol>
+    <symbol id="i-queue" viewBox="0 0 24 24"><path d="M4 6h13M4 11.5h13M4 17h7"/><path d="M15 14.5v6l5.2-3z" fill="currentColor"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.6A8.3 8.3 0 1 1 9.4 4a6.6 6.6 0 0 0 10.6 10.6z"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3.5v11.5M7.8 7.7 12 3.5l4.2 4.2"/><path d="M5.5 12v6.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V12"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9.5 7V4.5h5V7M6.3 7l.9 12.2a1.5 1.5 0 0 0 1.5 1.3h6.6a1.5 1.5 0 0 0 1.5-1.3L17.7 7"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4.2L19.3 8.9a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8z"/></symbol>
+    <symbol id="i-grip" viewBox="0 0 24 24"><path d="M5 9h14M5 15h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-paste" viewBox="0 0 24 24"><rect x="5.5" y="4.5" width="13" height="16.5" rx="2"/><path d="M9 4.5V3h6v1.5M9 10h6M9 14h4"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M9 18V5.5l11-2.2v12.5"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="17.5" cy="15.8" r="2.6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-addl" viewBox="0 0 24 24"><path d="M4 6h13M4 11.5h13M4 17h8M18 14.5v6M15 17.5h6"/></symbol>
+    <symbol id="i-nextup" viewBox="0 0 24 24"><path d="M4 6h11M4 11.5h11M4 17h6"/><path d="M15 14v7l5.5-3.5z" fill="currentColor"/></symbol>
+    <symbol id="i-radio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M8 8a5.7 5.7 0 0 0 0 8M16 8a5.7 5.7 0 0 1 0 8M5.2 5.2a9.6 9.6 0 0 0 0 13.6M18.8 5.2a9.6 9.6 0 0 1 0 13.6"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M18 13.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4.5"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V3.5M7.8 7.7 12 3.5l4.2 4.2M4.5 15v3.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/></symbol>
+    <symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3.5V15M7.8 10.8 12 15l4.2-4.2M4.5 15v3.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V15"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.2-1-1.5-1-2.6 0-1 .8-1.7 1.8-1.7h2.2a3.7 3.7 0 0 0 3.7-3.7c0-4.2-3.8-7.3-8.5-7.3z"/><circle cx="7.8" cy="11" r="1.1" fill="currentColor"/><circle cx="10.5" cy="7.4" r="1.1" fill="currentColor"/><circle cx="15" cy="7.6" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 7v10M21 12h0"/></symbol>
+    <symbol id="i-server" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="6.5" rx="2"/><rect x="3.5" y="13.5" width="17" height="6.5" rx="2"/><path d="M7.5 7.25h.01M7.5 16.75h.01"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 8.5-8.5M16.5 6.5l2.5 2.5M14.5 8.5l2 2"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.8h.01"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  </defs>
+</svg>
+
+<div id="app">
+  <!-- الرئيسية -->
+  <section class="view" id="v-home"></section>
+
+  <!-- البحث -->
+  <section class="view" id="v-search">
+    <h1 class="lt">البحث</h1>
+    <div class="sbarW">
+      <form class="sbar" id="sForm" action="#">
+        <svg class="i"><use href="#i-search"/></svg>
+        <input id="q" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="أغنية، فنان، أو رابط يوتيوب">
+        <button type="button" class="ib hidden" id="qClear" aria-label="مسح"><svg class="i"><use href="#i-x"/></svg></button>
+        <button type="button" class="ib" id="qPaste" aria-label="لصق"><svg class="i"><use href="#i-paste"/></svg></button>
+      </form>
+      <div id="sugg"></div>
+    </div>
+    <div id="sBody"></div>
+  </section>
+
+  <!-- المكتبة -->
+  <section class="view" id="v-lib"></section>
+
+  <!-- قائمة تشغيل -->
+  <section class="view" id="v-pl"></section>
+
+  <!-- الإعدادات -->
+  <section class="view" id="v-set"></section>
+</div>
+
+<div id="mini" class="hidden">
+  <div class="mimg"><img id="mImg" alt=""></div>
+  <div class="mm"><div id="mTitle"></div><div id="mArtist"></div></div>
+  <button class="ib" id="mPlay" aria-label="تشغيل"><svg class="i f"><use href="#i-play"/></svg></button>
+  <button class="ib" id="mNext" aria-label="التالي"><svg class="i f"><use href="#i-next"/></svg></button>
+  <div class="mprog"><i id="mProg"></i></div>
+</div>
+
+<nav id="tabs">
+  <button data-tab="home" class="on"><svg class="i"><use href="#i-home"/></svg>الرئيسية</button>
+  <button data-tab="search"><svg class="i"><use href="#i-search"/></svg>البحث</button>
+  <button data-tab="lib"><svg class="i"><use href="#i-lib"/></svg>مكتبتي</button>
+  <button data-tab="set"><svg class="i"><use href="#i-set"/></svg>الإعدادات</button>
+</nav>
+
+<!-- المشغل الكامل -->
+<div id="fp" aria-hidden="true">
+  <div class="fpbg"><img id="fpBg" alt=""></div>
+  <div class="fpin">
+    <div class="fptop fpdrag">
+      <button class="ib" id="fpClose" aria-label="إغلاق"><svg class="i"><use href="#i-down"/></svg></button>
+      <div class="fpsrc"><small id="fpSrcK">يتم التشغيل من</small><b id="fpSrc">نغم</b></div>
+      <button class="ib" id="fpMore" aria-label="المزيد"><svg class="i"><use href="#i-more"/></svg></button>
+    </div>
+    <div class="fpart fpdrag">
+      <div class="art" id="fpArt"><img id="fpImg" alt=""><div class="artload"><div class="spin"></div></div></div>
+      <div class="ythint">وضع التوافق: اضغط على المقطع لبدء التشغيل</div>
+    </div>
+    <div class="fpmeta">
+      <div class="tt"><div id="fpTitle"></div><div id="fpArtist"></div></div>
+      <button class="ib" id="fpFav" aria-label="المفضلة"><svg class="i"><use href="#i-heart"/></svg></button>
+    </div>
+    <div class="seek" dir="ltr">
+      <input id="seek" type="range" min="0" max="1000" step="1" value="0" aria-label="التقدم">
+      <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
+    </div>
+    <div class="ctrls" dir="ltr">
+      <button class="ib sm" id="bShuf" aria-label="عشوائي"><svg class="i"><use href="#i-shuf"/></svg></button>
+      <button class="ib" id="bPrev" aria-label="السابق"><svg class="i f"><use href="#i-prev"/></svg></button>
+      <button class="ib" id="bPlay" aria-label="تشغيل"><svg class="i f"><use href="#i-play"/></svg></button>
+      <button class="ib" id="bNext" aria-label="التالي"><svg class="i f"><use href="#i-next"/></svg></button>
+      <button class="ib sm" id="bRep" aria-label="تكرار"><svg class="i"><use href="#i-rep"/></svg></button>
+    </div>
+    <div class="fpbot">
+      <button class="ib" id="bSleep" aria-label="مؤقت النوم"><svg class="i"><use href="#i-moon"/></svg><span id="sleepLbl"></span></button>
+      <button class="ib" id="bAdd" aria-label="إضافة لقائمة"><svg class="i"><use href="#i-addl"/></svg></button>
+      <button class="ib" id="bShare" aria-label="مشاركة"><svg class="i"><use href="#i-share"/></svg></button>
+      <button class="ib" id="bQueue" aria-label="قائمة الانتظار"><svg class="i"><use href="#i-queue"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<div id="ytHost"><div id="ytPlayer"></div></div>
+
+<div id="sheetWrap"><div class="bd"></div><div class="sheet"><div class="grab"></div><div id="sheetIn" style="display:flex;flex-direction:column;min-height:0"></div></div></div>
+<div id="modal"><div class="mbox" id="mbox"></div></div>
+<div id="toast"></div>
+<input type="file" id="fileIn" accept="application/json,.json" class="hidden">
+<audio id="audio" playsinline preload="auto" x-webkit-airplay="allow"></audio>
+
+<script>
+'use strict';
+/* =====================================================================
+   نغم — مشغل موسيقى (ملف واحد)
+   ضع مفتاح YouTube Data API هنا إذا أردت أن يعمل البحث لكل المستخدمين
+   بدون ما يضيف كل واحد مفتاحه (اختياري):
+   ===================================================================== */
+const DEFAULT_YT_KEY = '';
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const ic = (n, cls = '') => `<svg class="i ${cls}"><use href="#i-${n}"/></svg>`;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const enc = encodeURIComponent;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const thumb = (id, q = 'mq') => `https://i.ytimg.com/vi/${id}/${q}default.jpg`;
+function fmt(s) { s = Math.floor(+s || 0); if (s < 0) s = 0; const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); }
+function views(n) { n = +n; if (!n) return ''; if (n >= 1e9) return (n / 1e9).toFixed(1).replace('.0', '') + ' مليار مشاهدة'; if (n >= 1e6) return (n / 1e6).toFixed(1).replace('.0', '') + ' مليون مشاهدة'; if (n >= 1e3) return Math.round(n / 1e3) + ' ألف مشاهدة'; return n + ' مشاهدة'; }
+function decodeHTML(s) { const t = document.createElement('textarea'); t.innerHTML = s; return t.value; }
+function cleanArtist(a) { return String(a || '').replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim(); }
+function uid() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function shuffleArr(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function isoDur(s) { const m = /P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(s || ''); if (!m) return 0; return (+m[1] || 0) * 86400 + (+m[2] || 0) * 3600 + (+m[3] || 0) * 60 + (+m[4] || 0); }
+const slim = t => ({ id: t.id, title: t.title || '', artist: t.artist || '', dur: +t.dur || 0 });
+
+/* ---------------- التخزين (خاص بكل جهاز) ---------------- */
+const KEY = 'nagham.v1';
+const DEF = {
+  name: '', history: [], playlists: [], searches: [], session: null,
+  settings: { accent: 'gold', radio: true, skipLong: true, quality: 'high', engine: 'auto', source: 'auto', ytKey: '', custom: '', histMax: 10 },
+  inst: { piped: null, inv: null, listPiped: [], listInv: [], listAt: 0 }
+};
+let DB = load();
+function load() {
+  let d = {};
+  try { d = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { }
+  const o = Object.assign(JSON.parse(JSON.stringify(DEF)), d);
+  o.settings = Object.assign({}, DEF.settings, d.settings || {});
+  o.inst = Object.assign({}, DEF.inst, d.inst || {});
+  if (!Array.isArray(o.playlists)) o.playlists = [];
+  if (!o.playlists.find(p => p.id === 'fav')) o.playlists.unshift({ id: 'fav', name: 'المفضلة', tracks: [], fixed: true });
+  return o;
+}
+let saveT;
+function save(now) {
+  clearTimeout(saveT);
+  const f = () => { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch (e) { toast('تعذر الحفظ — مساحة التخزين ممتلئة'); } };
+  now ? f() : saveT = setTimeout(f, 200);
+}
+const S = () => DB.settings;
+const ytKey = () => (S().ytKey || DEFAULT_YT_KEY || '').trim();
+
+/* ---------------- الشبكة والمصادر ---------------- */
+const PIPED_DEF = ['https://pipedapi.kavin.rocks', 'https://api.piped.private.coffee', 'https://pipedapi.adminforge.de', 'https://pipedapi.leptons.xyz', 'https://pipedapi.nosebs.ru', 'https://pipedapi.drgns.space', 'https://pipedapi.reallyaweso.me', 'https://piped-api.lunar.icu', 'https://pipedapi.ducks.party', 'https://pipedapi.r4fo.com'];
+const INV_DEF = ['https://inv.nadeko.net', 'https://invidious.nerdvpn.de', 'https://invidious.f5.si', 'https://inv.tux.pizza', 'https://iv.ggtyler.dev', 'https://invidious.privacyredirect.com', 'https://yt.artemislena.eu', 'https://yewtu.be'];
+const bad = new Set();
+
+async function fetchJSON(url, ms = 8000, signal) {
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), ms);
+  if (signal) { if (signal.aborted) c.abort(); else signal.addEventListener('abort', () => c.abort(), { once: true }); }
+  try {
+    const r = await fetch(url, { signal: c.signal });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+const norm = u => String(u || '').trim().replace(/\/+$/, '');
+function instList(type) {
+  const base = type === 'piped' ? [...(DB.inst.listPiped || []), ...PIPED_DEF] : [...(DB.inst.listInv || []), ...INV_DEF];
+  const out = [];
+  if (S().custom) out.push(norm(S().custom));
+  if (DB.inst[type]) out.push(DB.inst[type]);
+  out.push(...base.map(norm));
+  return [...new Set(out)].filter(b => b && !bad.has(b));
+}
+async function refreshInstanceLists() {
+  if (Date.now() - (DB.inst.listAt || 0) < 864e5) return;
+  DB.inst.listAt = Date.now();
+  try {
+    const p = await fetchJSON('https://piped-instances.kavin.rocks/', 7000);
+    if (Array.isArray(p)) DB.inst.listPiped = p.filter(x => x.api_url).sort((a, b) => (b.uptime_24h || 0) - (a.uptime_24h || 0)).map(x => norm(x.api_url)).slice(0, 14);
+  } catch (e) { }
+  try {
+    const v = await fetchJSON('https://api.invidious.io/instances.json?sort_by=health', 7000);
+    if (Array.isArray(v)) DB.inst.listInv = v.filter(([, i]) => i && i.api && i.type === 'https').map(([, i]) => norm(i.uri)).slice(0, 14);
+  } catch (e) { }
+  save();
+}
+// يجرب عدة خوادم بالتوازي (3 كل مرة) ويعتمد أول رد صحيح
+async function tryType(type, fn, maxN = 9) {
+  const list = instList(type).slice(0, maxN);
+  for (let i = 0; i < list.length; i += 3) {
+    const batch = list.slice(i, i + 3);
+    const ctrl = new AbortController();
+    try {
+      const res = await Promise.any(batch.map(async b => ({ b, r: await fn(b, ctrl.signal) })));
+      ctrl.abort();
+      if (DB.inst[type] !== res.b) { DB.inst[type] = res.b; save(); }
+      if (res.r && typeof res.r === 'object' && !Array.isArray(res.r)) { res.r._base = res.b; res.r._type = type; }
+      return res.r;
+    } catch (e) { }
+  }
+  throw new Error('no-' + type);
+}
+async function viaSources(pFn, iFn) {
+  const src = S().source;
+  const order = src === 'piped' ? ['piped'] : src === 'inv' ? ['inv'] : ['piped', 'inv'];
+  let err;
+  for (const t of order) {
+    try { return await tryType(t, t === 'piped' ? pFn : iFn); } catch (e) { err = e; }
+  }
+  throw err || new Error('no-source');
+}
+
+function pTrack(x) {
+  const id = ((x.url || '').match(/[?&]v=([\w-]{11})/) || [])[1];
+  return { id, title: x.title || '', artist: cleanArtist(x.uploaderName), dur: +x.duration || 0, views: +x.views || 0 };
+}
+function pickAudio(list, getMime, getRate) {
+  const mp4 = list.filter(a => /mp4|m4a/i.test(getMime(a)));
+  const pool = (mp4.length ? mp4 : list).slice().sort((a, b) => getRate(a) - getRate(b));
+  return S().quality === 'saver' ? pool[0] : pool[pool.length - 1];
+}
+const P = {
+  search: (b, q, sig) => fetchJSON(`${b}/search?q=${enc(q)}&filter=videos`, 8000, sig).then(d => {
+    if (!d || !Array.isArray(d.items)) throw 0;
+    return d.items.filter(x => (x.type === 'stream' || !x.type) && x.url && !x.isShort && x.duration > 0).map(pTrack).filter(t => t.id);
+  }),
+  suggest: (b, q, sig) => fetchJSON(`${b}/suggestions?query=${enc(q)}`, 4000, sig).then(d => { if (!Array.isArray(d)) throw 0; return d; }),
+  stream: (b, id, sig) => fetchJSON(`${b}/streams/${id}`, 10000, sig).then(d => {
+    const au = (d && d.audioStreams || []).filter(a => a.url);
+    if (!au.length) throw 0;
+    const a = pickAudio(au, x => x.mimeType || x.format || '', x => +x.bitrate || 0);
+    return {
+      url: a.url,
+      track: { id, title: d.title, artist: cleanArtist(d.uploader), dur: +d.duration || 0 },
+      related: (d.relatedStreams || []).filter(x => (x.type === 'stream' || !x.type) && x.duration > 0).map(pTrack).filter(t => t.id)
+    };
+  }),
+  playlist: (b, id, sig) => fetchJSON(`${b}/playlists/${id}`, 10000, sig).then(d => {
+    if (!d || !Array.isArray(d.relatedStreams)) throw 0;
+    return { name: d.name, tracks: d.relatedStreams.map(pTrack).filter(t => t.id) };
+  })
+};
+function iTrack(x) { return { id: x.videoId, title: x.title || '', artist: cleanArtist(x.author), dur: +x.lengthSeconds || 0, views: +x.viewCount || 0 }; }
+const I = {
+  search: (b, q, sig) => fetchJSON(`${b}/api/v1/search?q=${enc(q)}&type=video`, 8000, sig).then(d => {
+    if (!Array.isArray(d)) throw 0;
+    return d.filter(x => (x.type === 'video' || !x.type) && !x.liveNow && x.lengthSeconds > 0).map(iTrack).filter(t => t.id);
+  }),
+  suggest: (b, q, sig) => fetchJSON(`${b}/api/v1/search/suggestions?q=${enc(q)}`, 4000, sig).then(d => {
+    if (!d || !Array.isArray(d.suggestions)) throw 0; return d.suggestions.map(decodeHTML);
+  }),
+  stream: (b, id, sig) => fetchJSON(`${b}/api/v1/videos/${id}?local=true`, 10000, sig).then(d => {
+    if (!d || !d.title) throw 0;
+    const au = (d.adaptiveFormats || []).filter(f => /^audio\//.test(f.type || '') && f.url);
+    let url;
+    if (au.length) {
+      const a = pickAudio(au, x => x.type || '', x => +x.bitrate || 0);
+      url = /^https?:/.test(a.url) ? a.url : b + a.url;
+    } else url = `${b}/latest_version?id=${id}&itag=140&local=true`;
+    return {
+      url,
+      track: { id, title: d.title, artist: cleanArtist(d.author), dur: +d.lengthSeconds || 0 },
+      related: (d.recommendedVideos || []).map(iTrack).filter(t => t.id && t.dur > 0)
+    };
+  }),
+  playlist: (b, id, sig) => fetchJSON(`${b}/api/v1/playlists/${id}`, 10000, sig).then(d => {
+    if (!d || !Array.isArray(d.videos)) throw 0;
+    return { name: d.title, tracks: d.videos.map(iTrack).filter(t => t.id) };
+  })
+};
+// YouTube Data API (اختياري — أكثر ثباتاً للبحث)
+const Y = {
+  base: 'https://www.googleapis.com/youtube/v3/',
+  async details(ids) {
+    const o = {};
+    for (let i = 0; i < ids.length; i += 50) {
+      const d = await fetchJSON(`${Y.base}videos?part=snippet,contentDetails,statistics&id=${ids.slice(i, i + 50).join(',')}&key=${enc(ytKey())}`, 9000);
+      for (const v of d.items || []) o[v.id] = { id: v.id, title: decodeHTML(v.snippet.title), artist: cleanArtist(v.snippet.channelTitle), dur: isoDur(v.contentDetails.duration), views: +(v.statistics && v.statistics.viewCount) || 0 };
+    }
+    return o;
+  },
+  async search(q) {
+    const d = await fetchJSON(`${Y.base}search?part=snippet&type=video&maxResults=25&q=${enc(q)}&key=${enc(ytKey())}`, 9000);
+    const ids = (d.items || []).map(i => i.id && i.id.videoId).filter(Boolean);
+    const det = await Y.details(ids);
+    return ids.map(id => det[id]).filter(t => t && t.dur > 0);
+  },
+  async playlist(id) {
+    let ids = [], page = '';
+    for (let n = 0; n < 6; n++) {
+      const d = await fetchJSON(`${Y.base}playlistItems?part=contentDetails&maxResults=50&playlistId=${enc(id)}&key=${enc(ytKey())}${page ? '&pageToken=' + page : ''}`, 9000);
+      ids.push(...(d.items || []).map(x => x.contentDetails.videoId));
+      page = d.nextPageToken; if (!page) break;
+    }
+    let name = 'قائمة من يوتيوب';
+    try { const pl = await fetchJSON(`${Y.base}playlists?part=snippet&id=${enc(id)}&key=${enc(ytKey())}`, 8000); name = decodeHTML(pl.items[0].snippet.title); } catch (e) { }
+    const det = await Y.details(ids);
+    return { name, tracks: ids.map(i => det[i]).filter(Boolean) };
+  }
+};
+
+async function searchTracks(q) {
+  if (ytKey()) { try { const r = await Y.search(q); if (r.length) return r; } catch (e) { } }
+  return viaSources((b, s) => P.search(b, q, s), (b, s) => I.search(b, q, s));
+}
+async function suggestions(q) {
+  return viaSources((b, s) => P.suggest(b, q, s), (b, s) => I.suggest(b, q, s));
+}
+const streamCache = new Map();
+async function resolve(id, fresh) {
+  const c = streamCache.get(id);
+  if (c && !fresh && Date.now() - c.t < 3 * 3600e3) return c;
+  const r = await viaSources((b, s) => P.stream(b, id, s), (b, s) => I.stream(b, id, s));
+  r.t = Date.now();
+  streamCache.set(id, r);
+  return r;
+}
+async function getInfo(id) {
+  if (ytKey()) { try { const d = await Y.details([id]); if (d[id]) return d[id]; } catch (e) { } }
+  try { const r = await resolve(id); return Object.assign({ id }, r.track); } catch (e) { }
+  try { const d = await fetchJSON(`https://noembed.com/embed?url=${enc('https://www.youtube.com/watch?v=' + id)}`, 7000); if (d.title) return { id, title: d.title, artist: cleanArtist(d.author_name), dur: 0 }; } catch (e) { }
+  return { id, title: 'مقطع يوتيوب', artist: '', dur: 0 };
+}
+async function getYTPlaylist(id) {
+  if (ytKey()) { try { const r = await Y.playlist(id); if (r.tracks.length) return r; } catch (e) { } }
+  return viaSources((b, s) => P.playlist(b, id, s), (b, s) => I.playlist(b, id, s));
+}
+async function relatedOf(t) {
+  let list = [];
+  try { list = (await resolve(t.id)).related || []; } catch (e) { }
+  if (list.length < 4 && (t.artist || t.title)) { try { list = list.concat(await searchTracks(t.artist || t.title)); } catch (e) { } }
+  return list;
+}
+function parseYT(input) {
+  const s = String(input || '').trim();
+  if (!/youtu\.?be|youtube\.com|^[\w-]{11}$/i.test(s)) return null;
+  if (/^[\w-]{11}$/.test(s) && /\d|[A-Z]/.test(s) && /[a-z]/.test(s) && !/\s/.test(s)) return { type: 'video', id: s };
+  let u; try { u = new URL(/^https?:/i.test(s) ? s : 'https://' + s); } catch (e) { return null; }
+  const v = u.searchParams.get('v'), list = u.searchParams.get('list');
+  let id = v;
+  if (!id) {
+    const m = u.pathname.match(/\/(?:shorts|embed|live|v)\/([\w-]{11})/) || (/youtu\.be$/i.test(u.hostname) && u.pathname.match(/^\/([\w-]{11})/));
+    if (m) id = m[1];
+  }
+  if (id && /^[\w-]{11}$/.test(id)) return { type: 'video', id, list };
+  if (list) return { type: 'playlist', id: list };
+  return null;
+}
+
+/* ---------------- المشغّل ---------------- */
+const audio = $('#audio');
+const PL = { queue: [], idx: -1, mode: 'radio', listId: null, listName: '', repeat: 'off', shuffle: false, orig: null, engine: 'audio', playing: false, token: 0, played: new Set(), retries: 0, histTok: -1, pendingSeek: 0 };
+const cur = () => PL.queue[PL.idx];
+
+// إنشاء ملف صوت صامت قصير لفتح قفل الصوت في iOS عند أول لمسة
+const SILENT = (() => {
+  const n = 800, buf = new Uint8Array(44 + n), dv = new DataView(buf.buffer);
+  const w = (o, s) => [...s].forEach((c, i) => buf[o + i] = c.charCodeAt(0));
+  w(0, 'RIFF'); dv.setUint32(4, 36 + n, true); w(8, 'WAVE'); w(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+  dv.setUint32(24, 8000, true); dv.setUint32(28, 8000, true); dv.setUint16(32, 1, true); dv.setUint16(34, 8, true); w(36, 'data'); dv.setUint32(40, n, true);
+  buf.fill(128, 44); let bin = ''; buf.forEach(b => bin += String.fromCharCode(b));
+  return 'data:audio/wav;base64,' + btoa(bin);
+})();
+let unlocked = false;
+const isSilent = () => (audio.getAttribute('src') || '').startsWith('data:');
+function unlock() {
+  if (unlocked) return;
+  unlocked = true;
+  if (!audio.src || isSilent()) {
+    audio.src = SILENT;
+    const p = audio.play();
+    if (p && p.catch) p.catch(() => { unlocked = false; });
+  }
+}
+
+/* محرك يوتيوب الرسمي (وضع التوافق) */
+const YE = {
+  p: null, ready: false, loading: false, pending: null, tapT: 0, poll: 0,
+  loadApi() {
+    if (YE.loading || (window.YT && YT.Player)) return;
+    YE.loading = true;
+    window.onYouTubeIframeAPIReady = () => {
+      const vars = { playsinline: 1, controls: 1, rel: 0, modestbranding: 1, fs: 0, iv_load_policy: 3, disablekb: 1 };
+      if (/^https?:/.test(location.protocol)) vars.origin = location.origin;
+      YE.p = new YT.Player('ytPlayer', {
+        width: 220, height: 220, playerVars: vars,
+        events: {
+          onReady: () => { YE.ready = true; if (YE.pending) { const x = YE.pending; YE.pending = null; YE.load(x); } },
+          onStateChange: e => YE.state(e.data),
+          onError: e => YE.error(e.data)
+        }
+      });
+    };
+    const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.async = true;
+    s.onerror = () => { YE.loading = false; };
+    document.head.appendChild(s);
+  },
+  load(id) {
+    if (!YE.ready) { YE.pending = id; YE.loadApi(); return; }
+    try { YE.p.loadVideoById({ videoId: id }); } catch (e) { }
+    clearTimeout(YE.tapT);
+    YE.tapT = setTimeout(() => { if (PL.engine === 'yt' && !PL.playing) ytTap(true); }, 3500);
+    clearInterval(YE.poll);
+    YE.poll = setInterval(() => { if (PL.engine === 'yt') onTime(); }, 500);
+  },
+  play() { try { YE.p && YE.p.playVideo(); } catch (e) { } return Promise.resolve(); },
+  pause() { try { YE.p && YE.p.pauseVideo(); } catch (e) { } },
+  seek(t) { try { YE.p && YE.p.seekTo(t, true); } catch (e) { } },
+  time() { try { return YE.p && YE.p.getCurrentTime ? YE.p.getCurrentTime() || 0 : 0; } catch (e) { return 0; } },
+  dur() { try { return YE.p && YE.p.getDuration ? YE.p.getDuration() || 0 : 0; } catch (e) { return 0; } },
+  state(s) {
+    if (PL.engine !== 'yt') return;
+    if (s === 1) { ytTap(false); onPlaying(); }
+    else if (s === 2) onPaused();
+    else if (s === 0) onEnded();
+    else if (s === 3) setLoading(true);
+  },
+  error(code) {
+    if (PL.engine !== 'yt') return;
+    ytTap(false); setLoading(false);
+    toast(code === 101 || code === 150 ? 'صاحب المقطع منع تشغيله خارج يوتيوب — ننتقل للتالي' : 'تعذر تشغيل المقطع — ننتقل للتالي');
+    setTimeout(() => next(true, true), 1200);
+  }
+};
+const AE = {
+  play() { return audio.play(); }, pause() { audio.pause(); }, seek(t) { try { audio.currentTime = t; } catch (e) { } },
+  time() { return audio.currentTime || 0; }, dur() { return isFinite(audio.duration) ? audio.duration : 0; }
+};
+const eng = () => PL.engine === 'yt' ? YE : AE;
+function switchEngine(e) {
+  if (PL.engine === e) return;
+  if (e === 'yt') audio.pause(); else { YE.pause(); ytTap(false); clearInterval(YE.poll); }
+  PL.engine = e;
+}
+function ytTap(on) {
+  const h = $('#ytHost');
+  document.body.classList.toggle('yt-tap', on);
+  if (on) {
+    openFP();
+    setLoading(false);
+    setTimeout(() => {
+      const r = $('#fpArt').getBoundingClientRect();
+      Object.assign(h.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', bottom: 'auto' });
+      try { YE.p.setSize(r.width, r.height); } catch (e) { }
+      h.classList.add('tap');
+    }, 450);
+  } else {
+    h.classList.remove('tap');
+    Object.assign(h.style, { left: '0', top: 'auto', bottom: '0', width: '220px', height: '220px' });
+    try { YE.p && YE.p.setSize(220, 220); } catch (e) { }
+  }
+}
+
+function setLoading(on) { document.body.classList.toggle('loading', !!on); }
+
+async function loadCurrent(autoplay = true, startAt = 0) {
+  const t = cur(); if (!t) return;
+  const my = ++PL.token;
+  PL.playing = false; PL.pendingSeek = startAt || 0;
+  document.body.classList.remove('is-playing');
+  setLoading(true); ytTap(false);
+  renderNow(); setMeta(t); saveSession();
+  const pref = S().engine;
+  if (pref === 'yt') { // يجب أن يتم بشكل متزامن للحفاظ على لمسة المستخدم
+    switchEngine('yt'); YE.load(t.id);
+    if (!t.title) getInfo(t.id).then(i => { Object.assign(t, slim(i)); renderNow(); setMeta(t); });
+    maybeExtend(); return;
+  }
+  try {
+    const r = await resolve(t.id);
+    if (my !== PL.token) return;
+    if (r.track) { if (!t.title) t.title = r.track.title; if (!t.artist) t.artist = r.track.artist; if (!t.dur) t.dur = r.track.dur; renderNow(); setMeta(t); }
+    switchEngine('audio');
+    audio.src = r.url;
+    if (autoplay) {
+      try { await audio.play(); }
+      catch (e) { if (my === PL.token && e && e.name === 'NotAllowedError') { setLoading(false); onPaused(); toast('اضغط زر التشغيل ▶'); } }
+    } else setLoading(false);
+  } catch (e) {
+    if (my !== PL.token) return;
+    if (pref === 'auto') {
+      switchEngine('yt'); YE.load(t.id);
+      if (!t.title) getInfo(t.id).then(i => { Object.assign(t, slim(i)); renderNow(); setMeta(t); });
+    } else { setLoading(false); onPaused(); toast('تعذر تحميل الصوت — جرّب مصدراً آخر من الإعدادات'); }
+  }
+  maybeExtend();
+}
+
+function startQueue(tracks, idx = 0, opt = {}) {
+  if (!tracks || !tracks.length) return;
+  unlock();
+  PL.queue = tracks.map(slim); PL.idx = Math.max(0, Math.min(idx, PL.queue.length - 1));
+  PL.mode = opt.mode || 'list'; PL.listId = opt.listId || null; PL.listName = opt.listName || '';
+  PL.orig = null; PL.played = new Set(); PL.retries = 0;
+  if (opt.shuffle != null) PL.shuffle = opt.shuffle;
+  if (PL.shuffle && PL.mode === 'list') applyShuffle();
+  showMini();
+  loadCurrent(true);
+  if (opt.open) openFP();
+}
+function playRadio(t) { startQueue([t], 0, { mode: 'radio' }); }
+function applyShuffle() {
+  PL.orig = PL.queue.slice();
+  const c = PL.queue[PL.idx];
+  const rest = shuffleArr(PL.queue.filter((_, i) => i !== PL.idx));
+  PL.queue = [c, ...rest]; PL.idx = 0;
+}
+function toggle() {
+  unlock();
+  if (!cur()) return;
+  if (PL.playing) { eng().pause(); return; }
+  if (PL.engine === 'audio' && (!audio.src || isSilent())) { loadCurrent(true, PL.pendingSeek || (DB.session && DB.session.pos) || 0); return; }
+  const p = eng().play();
+  if (p && p.catch) p.catch(() => loadCurrent(true, AE.time()));
+}
+function next(auto = false, force = false) {
+  if (!auto) unlock();
+  if (!PL.queue.length) return;
+  if (auto && !force && PL.repeat === 'one') { eng().seek(0); eng().play(); return; }
+  if (PL.idx < PL.queue.length - 1) { PL.idx++; loadCurrent(); }
+  else if (PL.repeat === 'all' && PL.mode === 'list') { PL.idx = 0; loadCurrent(); }
+  else if (PL.mode === 'radio' && S().radio) {
+    setLoading(true);
+    extend().then(ok => {
+      if (ok && PL.idx < PL.queue.length - 1) { PL.idx++; loadCurrent(); }
+      else { setLoading(false); if (!auto) toast('لا يوجد مقطع تالي'); }
+    });
+  } else {
+    if (auto) { onPaused(); eng().seek(0); toast('انتهت قائمة التشغيل'); }
+    else toast('هذا آخر مقطع');
+  }
+}
+function prev() {
+  unlock();
+  if (!PL.queue.length) return;
+  if (eng().time() > 4 || PL.idx === 0) { eng().seek(0); if (!PL.playing) toggle(); return; }
+  PL.idx--; loadCurrent();
+}
+let extending = null;
+function maybeExtend() { if (PL.mode === 'radio' && S().radio && PL.idx >= PL.queue.length - 3) extend(); }
+function extend() {
+  if (extending) return extending;
+  const seed = cur(); if (!seed) return Promise.resolve(false);
+  extending = (async () => {
+    try {
+      let rel = await relatedOf(seed);
+      const inQ = new Set(PL.queue.map(t => t.id));
+      const titles = new Set(PL.queue.map(t => (t.title || '').toLowerCase().slice(0, 24)));
+      rel = rel.filter(t => t.id && !inQ.has(t.id) && !PL.played.has(t.id));
+      if (S().skipLong) rel = rel.filter(t => !t.dur || (t.dur >= 60 && t.dur <= 600));
+      const out = [];
+      for (const t of rel) { const k = (t.title || '').toLowerCase().slice(0, 24); if (titles.has(k)) continue; titles.add(k); inQ.add(t.id); out.push(slim(t)); if (out.length >= 8) break; }
+      if (!out.length) return false;
+      PL.queue.push(...out);
+      saveSession(); refreshQueueSheet();
+      prefetchNext();
+      return true;
+    } catch (e) { return false; } finally { extending = null; }
+  })();
+  return extending;
+}
+function prefetchNext() { const n = PL.queue[PL.idx + 1]; if (n && PL.engine === 'audio' && S().engine !== 'yt') resolve(n.id).catch(() => { }); }
+
+function onPlaying() {
+  PL.playing = true; PL.retries = 0; setLoading(false);
+  document.body.classList.add('is-playing');
+  if (PL.pendingSeek) { const s = PL.pendingSeek; PL.pendingSeek = 0; if (s > 1 && s < eng().dur() - 3) eng().seek(s); }
+  updatePlayBtns();
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+  const t = cur();
+  if (t && PL.histTok !== PL.token) { PL.histTok = PL.token; addHistory(t); PL.played.add(t.id); prefetchNext(); maybeExtend(); }
+}
+function onPaused() {
+  PL.playing = false; document.body.classList.remove('is-playing'); updatePlayBtns();
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+  saveSession();
+}
+function onEnded() {
+  if (sleepT.eot) { clearSleep(); onPaused(); eng().seek(0); toast('تم الإيقاف — مؤقت النوم'); return; }
+  next(true);
+}
+audio.addEventListener('playing', () => { if (!isSilent() && PL.engine === 'audio') onPlaying(); });
+audio.addEventListener('pause', () => { if (!isSilent() && PL.engine === 'audio') onPaused(); });
+audio.addEventListener('ended', () => { if (isSilent()) { audio.removeAttribute('src'); return; } if (PL.engine === 'audio') onEnded(); });
+audio.addEventListener('waiting', () => { if (!isSilent() && PL.engine === 'audio' && PL.playing) setLoading(true); });
+audio.addEventListener('canplay', () => { if (!isSilent() && PL.playing) setLoading(false); });
+audio.addEventListener('timeupdate', () => { if (!isSilent() && PL.engine === 'audio') onTime(); });
+audio.addEventListener('loadedmetadata', () => { if (!isSilent()) onTime(); });
+audio.addEventListener('error', () => {
+  if (isSilent() || PL.engine !== 'audio' || !audio.src) return;
+  const t = cur(); if (!t) return;
+  const c = streamCache.get(t.id);
+  if (c && c._base) bad.add(c._base);
+  streamCache.delete(t.id);
+  PL.retries++;
+  if (PL.retries <= 2) { loadCurrent(true, AE.time()); return; }
+  PL.retries = 0;
+  if (S().engine === 'auto') { switchEngine('yt'); YE.load(t.id); }
+  else { toast('تعذر تشغيل المقطع — ننتقل للتالي'); next(true, true); }
+});
+
+let lastSessSave = 0, lastPos = 0;
+function onTime() {
+  const t = eng().time(), d = eng().dur() || (cur() && cur().dur) || 0;
+  const p = d ? Math.min(100, t / d * 100) : 0;
+  if (!seeking) { const sk = $('#seek'); sk.value = d ? Math.round(t / d * 1000) : 0; sk.style.setProperty('--p', p + '%'); $('#tCur').textContent = fmt(t); }
+  $('#tDur').textContent = fmt(d);
+  $('#mProg').style.width = p + '%';
+  if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && d && t <= d && Math.abs(t - lastPos) > 0.9) {
+    lastPos = t;
+    try { navigator.mediaSession.setPositionState({ duration: d, position: t, playbackRate: 1 }); } catch (e) { }
+  }
+  if (Date.now() - lastSessSave > 5000) { lastSessSave = Date.now(); saveSession(); }
+  checkSleep();
+}
+
+/* Media Session: أزرار شاشة القفل ومركز التحكم */
+function setMeta(t) {
+  if (!('mediaSession' in navigator) || !t) return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: t.title || 'نغم', artist: t.artist || '', album: PL.listName || 'نغم',
+      artwork: [{ src: thumb(t.id, 'hq'), sizes: '480x360', type: 'image/jpeg' }, { src: thumb(t.id, 'mq'), sizes: '320x180', type: 'image/jpeg' }]
+    });
+  } catch (e) { }
+}
+if ('mediaSession' in navigator) {
+  const ms = navigator.mediaSession, h = (a, f) => { try { ms.setActionHandler(a, f); } catch (e) { } };
+  h('play', () => { if (!PL.playing) toggle(); });
+  h('pause', () => { if (PL.playing) eng().pause(); });
+  h('previoustrack', () => prev());
+  h('nexttrack', () => next());
+  h('seekto', e => { eng().seek(e.seekTime); onTime(); });
+}
+
+/* مؤقت النوم */
+const sleepT = { until: 0, eot: false };
+function clearSleep() { sleepT.until = 0; sleepT.eot = false; $('#sleepLbl').textContent = ''; $('#bSleep').classList.remove('on'); }
+function checkSleep() {
+  if (!sleepT.until) return;
+  const left = sleepT.until - Date.now();
+  if (left <= 0) { clearSleep(); eng().pause(); toast('تم الإيقاف — مؤقت النوم'); return; }
+  $('#sleepLbl').textContent = Math.ceil(left / 60000) + 'د';
+}
+setInterval(() => { if (sleepT.until && !PL.playing) checkSleep(); }, 15000);
+
+/* السجل والجلسة */
+function addHistory(t) {
+  DB.history = [slim(t), ...DB.history.filter(x => x.id !== t.id)].slice(0, +S().histMax || 10);
+  save(); if (curTab === 'home') renderHome();
+}
+function saveSession() {
+  if (!PL.queue.length) return;
+  DB.session = { queue: PL.queue.slice(0, 300), idx: PL.idx, mode: PL.mode, listId: PL.listId, listName: PL.listName, repeat: PL.repeat, shuffle: PL.shuffle, pos: eng().time() || PL.pendingSeek || 0 };
+  save();
+}
+function restoreSession() {
+  const s = DB.session;
+  if (!s || !Array.isArray(s.queue) || !s.queue.length) return;
+  Object.assign(PL, { queue: s.queue, idx: Math.min(s.idx || 0, s.queue.length - 1), mode: s.mode || 'list', listId: s.listId, listName: s.listName || '', repeat: s.repeat || 'off', shuffle: !!s.shuffle, pendingSeek: s.pos || 0 });
+  renderNow(); showMini(); setMeta(cur());
+  const d = cur().dur; if (d) { $('#tCur').textContent = fmt(s.pos); $('#tDur').textContent = fmt(d); const p = Math.min(100, s.pos / d * 100); $('#mProg').style.width = p + '%'; $('#seek').value = Math.round(p * 10); $('#seek').style.setProperty('--p', p + '%'); }
+}
+
+/* ---------------- الواجهة ---------------- */
+let curTab = 'home', plOpen = null, plEdit = false;
+const ctxTracks = { search: [], link: [], ytpl: [] };
+let ytplData = null;
+
+function toast(msg, ms = 2400) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), ms);
+}
+function showTab(tab) {
+  curTab = tab;
+  $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  const id = tab === 'lib' && plOpen ? 'v-pl' : 'v-' + tab;
+  $$('.view').forEach(v => v.classList.toggle('active', v.id === id));
+  if (tab === 'home') renderHome();
+  if (tab === 'lib') plOpen ? renderPl() : renderLib();
+  if (tab === 'set') renderSet();
+}
+function showMini() { $('#mini').classList.remove('hidden'); document.body.classList.remove('nomini'); }
+function updatePlayBtns() {
+  const n = PL.playing ? 'pause' : 'play';
+  $('#mPlay').innerHTML = ic(n, 'f'); $('#bPlay').innerHTML = ic(n, 'f');
+}
+function renderNow() {
+  const t = cur(); if (!t) return;
+  $('#mImg').src = thumb(t.id); $('#mTitle').textContent = t.title || '...'; $('#mArtist').textContent = t.artist || '';
+  const img = $('#fpImg'); img.onerror = () => { img.onerror = null; img.src = thumb(t.id, 'mq'); img.style.height = '100%'; }; img.style.height = ''; img.src = thumb(t.id, 'hq');
+  $('#fpBg').src = thumb(t.id, 'mq');
+  $('#fpTitle').textContent = t.title || '...'; $('#fpArtist').textContent = t.artist || '';
+  $('#fpSrcK').textContent = PL.mode === 'radio' ? 'تشغيل تلقائي' : 'يتم التشغيل من';
+  $('#fpSrc').textContent = PL.mode === 'radio' ? 'أغانٍ مشابهة لاختيارك' : (PL.listName || 'قائمة التشغيل');
+  $('#fpFav').classList.toggle('on', isFav(t.id));
+  $('#fpFav').innerHTML = ic('heart', isFav(t.id) ? 'f' : '');
+  $('#bShuf').classList.toggle('on', PL.shuffle);
+  $('#bRep').classList.toggle('on', PL.repeat !== 'off');
+  $('#bRep').innerHTML = ic(PL.repeat === 'one' ? 'rep1' : 'rep');
+  updatePlayBtns();
+  $$('.row').forEach(r => { const on = r.dataset.id === t.id && r.dataset.ctx !== 'queue'; r.classList.toggle('now', on); });
+  refreshQueueSheet();
+}
+function openFP() { const f = $('#fp'); f.classList.add('open'); f.setAttribute('aria-hidden', 'false'); }
+function closeFP() { ytTap(false); const f = $('#fp'); f.classList.remove('open'); f.setAttribute('aria-hidden', 'true'); }
+
+const eqH = '<span class="eq"><i></i><i></i><i></i></span>';
+function row(t, o = {}) {
+  const now = cur() && cur().id === t.id && o.ctx !== 'queue';
+  const sub = [t.artist, o.wide && t.views ? views(t.views) : ''].filter(Boolean).join(' · ');
+  return `<div class="row${o.wide ? ' wide' : ''}${now ? ' now' : ''}" data-id="${esc(t.id)}" data-i="${o.i ?? ''}" data-ctx="${esc(o.ctx || '')}">
+    ${o.num != null ? `<div class="num">${o.num}</div>` : ''}
+    <div class="th"><img loading="lazy" src="${thumb(t.id)}" alt="">${t.dur && o.wide ? `<span class="dur">${fmt(t.dur)}</span>` : ''}${now ? `<span class="thnow">${eqH}</span>` : ''}</div>
+    <div class="meta"><div class="t">${esc(t.title || 'بدون عنوان')}</div><div class="s">${esc(sub)}${!o.wide && t.dur ? `<span style="direction:ltr;display:inline-block;margin-inline-start:4px">${sub ? '· ' : ''}${fmt(t.dur)}</span>` : ''}</div></div>
+    ${o.grip ? `<button class="grip" aria-label="سحب لإعادة الترتيب">${ic('grip')}</button>` : ''}
+    ${o.rm ? `<button class="ib" data-act="rm" aria-label="حذف">${ic('x')}</button>` : `<button class="ib" data-act="more" aria-label="خيارات">${ic('more')}</button>`}
+  </div>`;
+}
+function cover(pl, cls = '') {
+  if (pl.id === 'fav') return `<div class="cv one fav ${cls}"><div class="ph">${ic('heart', 'f')}</div></div>`;
+  const ids = [...new Set(pl.tracks.map(t => t.id))];
+  if (!ids.length) return `<div class="cv one ${cls}"><div class="ph">${ic('note')}</div></div>`;
+  if (ids.length < 4) return `<div class="cv one ${cls}"><img src="${thumb(ids[0])}" alt=""></div>`;
+  return `<div class="cv ${cls}">${ids.slice(0, 4).map(i => `<img src="${thumb(i)}" alt="">`).join('')}</div>`;
+}
+const plById = id => DB.playlists.find(p => p.id === id);
+const isFav = id => !!plById('fav').tracks.find(t => t.id === id);
+const plDur = pl => pl.tracks.reduce((a, t) => a + (+t.dur || 0), 0);
+function durText(s) { const h = Math.floor(s / 3600), m = Math.round(s % 3600 / 60); return h ? `${h} س ${m} د` : `${m} دقيقة`; }
+
+/* الرئيسية */
+function renderHome() {
+  const h = new Date().getHours();
+  const greet = h < 5 ? 'سهرة سعيدة' : h < 12 ? 'صباح الخير' : 'مساء الخير';
+  const hist = DB.history;
+  const pls = DB.playlists.filter(p => p.id !== 'fav' || p.tracks.length);
+  const last = hist[0];
+  let html = `<div class="topbar"><div><div class="eyebrow">${greet}${DB.name ? '، ' + esc(DB.name) : ''}</div><h1 class="lt" style="margin-bottom:14px">استمع مجدداً</h1></div>
+    <button class="ib soft" data-go="search" aria-label="بحث">${ic('search')}</button></div>`;
+  if (!hist.length) {
+    html += `<div class="empty card" style="margin-top:8px"><div class="ico">${ic('note')}</div><h3>ابدأ رحلتك الموسيقية</h3>
+      <p>ابحث عن أي أغنية أو الصق رابط يوتيوب، وآخر ما تستمع إليه سيظهر هنا.</p><button class="btn pri" data-go="search">${ic('search')}ابحث عن أغنية</button></div>`;
+  } else {
+    if (last && (!cur() || cur().id !== last.id || !PL.playing)) {
+      html += `<div class="hero" data-hero="1"><div class="bgi" style="background-image:url('${thumb(last.id)}')"></div>
+        <div class="hth"><img src="${thumb(last.id)}" alt=""></div>
+        <div class="hm"><small>آخر ما استمعت إليه</small><b>${esc(last.title)}</b><span>${esc(last.artist)}</span></div>
+        <button class="ib acc" data-hero-play="1" aria-label="تشغيل">${ic('play', 'f')}</button></div>`;
+    }
+    html += `<div class="sec"><h2>آخر ما شغّلته</h2><button class="link" id="playHist">${ic('play', 'f')}تشغيل الكل</button></div>
+      <div class="list" id="homeList">${hist.map((t, i) => row(t, { i, num: i + 1, ctx: 'home' })).join('')}</div>`;
+  }
+  if (pls.length) {
+    html += `<div class="sec"><h2>قوائمك</h2><button class="link" data-go="lib">عرض الكل</button></div>
+      <div class="hscroll">${pls.map(p => `<button class="plc" data-pl="${p.id}" style="text-align:start">${cover(p)}<b>${esc(p.name)}</b><span>${p.tracks.length} مقطع</span></button>`).join('')}</div>`;
+  }
+  $('#v-home').innerHTML = html;
+  const ph = $('#playHist'); if (ph) ph.onclick = () => startQueue(DB.history, 0, { mode: 'list', listName: 'آخر ما شغّلته', shuffle: false });
+  const hp = $('[data-hero-play]');
+  if (hp) hp.onclick = e => { e.stopPropagation(); if (cur() && cur().id === last.id) toggle(); else playRadio(last); };
+  const hero = $('[data-hero]'); if (hero) hero.onclick = () => { if (cur() && cur().id === last.id) { openFP(); if (!PL.playing) toggle(); } else playRadio(last); };
+}
+
+/* البحث */
+const TILES = [
+  ['طرب أصيل', 'طرب أصيل', '#8a5a1c', '#3a220a'], ['خليجي', 'اغاني خليجية', '#1f6f63', '#0b2a25'], ['شيلات', 'شيلات', '#7a2f2f', '#2a0f0f'], ['رومانسي', 'اغاني رومانسية', '#7b2d55', '#2a0d1e'],
+  ['هادئ Lo-fi', 'lofi chill music', '#34407a', '#10152b'], ['بوب عالمي', 'top pop hits', '#5b3a8a', '#1d1230'], ['عود', 'عزف عود', '#6d4a2a', '#26180c'], ['أناشيد', 'اناشيد بدون موسيقى', '#2f5d3a', '#0e2213']
+];
+function renderSearchIdle() {
+  const rs = DB.searches;
+  let html = '';
+  if (rs.length) {
+    html += `<div class="sec" style="margin-top:12px"><h2>عمليات البحث الأخيرة</h2><button class="link" id="clrS">مسح</button></div>
+      <div class="chips">${rs.map(q => `<button class="chip" data-q="${esc(q)}">${ic('clock')}<span>${esc(q)}</span></button>`).join('')}</div>`;
+  }
+  html += `<div class="sec"><h2>استكشف</h2></div><div class="tiles">${TILES.map(([n, q, a, b]) => `<button class="tile" data-q="${esc(q)}" style="background:linear-gradient(135deg,${a},${b})">${n}</button>`).join('')}</div>
+    <p class="note" style="margin-top:18px">💡 تقدر تلصق رابط أي مقطع أو قائمة تشغيل من يوتيوب في خانة البحث.</p>`;
+  $('#sBody').innerHTML = html;
+  const c = $('#clrS'); if (c) c.onclick = () => { DB.searches = []; save(); renderSearchIdle(); };
+}
+function skeleton(n = 6) { return Array.from({ length: n }, () => `<div class="srow"><div class="skel" style="width:136px;height:77px;border-radius:12px"></div><div style="flex:1"><div class="skel" style="height:14px;width:90%;margin-bottom:8px"></div><div class="skel" style="height:12px;width:55%"></div></div></div>`).join(''); }
+function errBox(msg, retry) {
+  return `<div class="card errbox"><div class="empty" style="padding:10px 0 0"><div class="ico">${ic('server')}</div><h3>${msg}</h3>
+  <p>خوادم يوتيوب البديلة قد تكون مشغولة. جرّب مرة ثانية، أو أضف مفتاح YouTube API من الإعدادات لبحث أكثر ثباتاً.</p>
+  <div style="display:flex;gap:10px;justify-content:center"><button class="btn pri sm" data-retry="${esc(retry)}">إعادة المحاولة</button><button class="btn sm" data-go="set">الإعدادات</button></div></div></div>`;
+}
+let searchTok = 0;
+async function doSearch(q) {
+  q = String(q || '').trim(); if (!q) return renderSearchIdle();
+  const inp = $('#q'); inp.value = q; inp.blur(); $('#qClear').classList.remove('hidden'); hideSugg();
+  const my = ++searchTok;
+  const link = parseYT(q);
+  if (!link) { DB.searches = [q, ...DB.searches.filter(x => x !== q)].slice(0, 12); save(); }
+  $('#sBody').innerHTML = skeleton();
+  $('#v-search').scrollTop = 0;
+  try {
+    if (link && link.type === 'video') {
+      const info = await getInfo(link.id);
+      if (my !== searchTok) return;
+      ctxTracks.link = [info];
+      $('#sBody').innerHTML = `<div class="sec" style="margin-top:8px"><h2>المقطع</h2></div><div class="list">${row(info, { i: 0, ctx: 'link', wide: true })}</div>
+        <div style="display:flex;gap:10px;margin-top:12px"><button class="btn pri" style="flex:1" id="lnkPlay">${ic('play', 'f')}تشغيل</button><button class="btn" style="flex:1" id="lnkAdd">${ic('addl')}إضافة لقائمة</button></div>
+        <div id="lnkRel"></div>`;
+      $('#lnkPlay').onclick = () => startQueue([info], 0, { mode: 'radio', open: true });
+      $('#lnkAdd').onclick = () => addToPlSheet(info);
+      relatedOf(info).then(rel => {
+        if (my !== searchTok || !rel.length) return;
+        ctxTracks.search = rel.slice(0, 20);
+        $('#lnkRel').innerHTML = `<div class="sec"><h2>مقاطع مشابهة</h2></div><div class="list">${ctxTracks.search.map((t, i) => row(t, { i, ctx: 'search', wide: true })).join('')}</div>`;
+      });
+    } else if (link && link.type === 'playlist') {
+      const pl = await getYTPlaylist(link.id);
+      if (my !== searchTok) return;
+      ytplData = pl; ctxTracks.ytpl = pl.tracks;
+      const fake = { id: 'x', tracks: pl.tracks };
+      $('#sBody').innerHTML = `<div class="card plhead">${cover(fake)}<div style="flex:1;min-width:0"><div class="eyebrow">قائمة تشغيل من يوتيوب</div><b style="font-size:17px;display:block">${esc(pl.name)}</b><span class="note">${pl.tracks.length} مقطع</span></div></div>
+        <div style="display:flex;gap:10px;margin-bottom:10px"><button class="btn pri" style="flex:1" id="yplPlay">${ic('play', 'f')}تشغيل</button><button class="btn" style="flex:1" id="yplSave">${ic('dl')}حفظ في مكتبتي</button></div>
+        <div class="list">${pl.tracks.map((t, i) => row(t, { i, num: i + 1, ctx: 'ytpl' })).join('')}</div>`;
+      $('#yplPlay').onclick = () => startQueue(pl.tracks, 0, { mode: 'list', listName: pl.name, open: true });
+      $('#yplSave').onclick = async () => {
+        const name = await promptModal({ title: 'حفظ القائمة', value: pl.name, ok: 'حفظ' });
+        if (!name) return;
+        const p = { id: uid(), name, tracks: pl.tracks.map(slim), created: Date.now() };
+        DB.playlists.push(p); save(); toast('تم حفظ القائمة في مكتبتك ✓');
+      };
+    } else {
+      const res = await searchTracks(q);
+      if (my !== searchTok) return;
+      ctxTracks.search = res;
+      $('#sBody').innerHTML = res.length
+        ? `<div class="list" style="margin-top:6px">${res.map((t, i) => row(t, { i, ctx: 'search', wide: true })).join('')}</div>`
+        : `<div class="empty"><div class="ico">${ic('search')}</div><h3>لا توجد نتائج</h3><p>جرّب كلمات أخرى.</p></div>`;
+    }
+  } catch (e) {
+    if (my !== searchTok) return;
+    $('#sBody').innerHTML = errBox('تعذر جلب النتائج', q);
+  }
+}
+let suggT = 0, suggTok = 0;
+function hideSugg() { $('#sugg').innerHTML = ''; }
+function onQInput() {
+  const v = $('#q').value.trim();
+  $('#qClear').classList.toggle('hidden', !v);
+  $('#qPaste').classList.toggle('hidden', !!v);
+  clearTimeout(suggT);
+  if (v.length < 2 || parseYT(v)) { hideSugg(); if (!v) renderSearchIdle(); return; }
+  suggT = setTimeout(async () => {
+    const my = ++suggTok;
+    try {
+      const s = await suggestions(v);
+      if (my !== suggTok || document.activeElement !== $('#q')) return;
+      $('#sugg').innerHTML = s.slice(0, 7).map(x => `<div class="sg" data-q="${esc(x)}">${ic('search')}<span>${esc(x)}</span></div>`).join('');
+    } catch (e) { }
+  }, 260);
+}
+
+/* المكتبة */
+function renderLib() {
+  const pls = DB.playlists;
+  $('#v-lib').innerHTML = `<div class="topbar"><h1 class="lt">مكتبتي</h1><button class="ib acc" id="newPl" aria-label="قائمة جديدة" style="margin-bottom:18px">${ic('plus')}</button></div>
+    <div class="list">${pls.map(p => `<div class="lrow" data-pl="${p.id}">${cover(p)}<div class="meta"><b>${esc(p.name)}</b><span>${p.tracks.length} مقطع${p.tracks.length ? ' · ' + durText(plDur(p)) : ''}</span></div>${ic('chev')}</div>`).join('')}</div>
+    ${pls.length <= 1 ? `<div class="empty"><p>أنشئ قائمتك الأولى بالضغط على +<br>ثم أضف لها أغاني من البحث عبر زر ⋯</p><button class="btn pri" id="newPl2">${ic('plus')}قائمة جديدة</button></div>` : ''}`;
+  $('#newPl').onclick = newPlaylist;
+  const n2 = $('#newPl2'); if (n2) n2.onclick = newPlaylist;
+}
+async function newPlaylist(track) {
+  const name = await promptModal({ title: 'قائمة تشغيل جديدة', placeholder: 'اسم القائمة', ok: 'إنشاء' });
+  if (!name) return null;
+  const p = { id: uid(), name, tracks: [], created: Date.now() };
+  if (track && track.id) p.tracks.push(slim(track));
+  DB.playlists.push(p); save();
+  if (curTab === 'lib') renderLib();
+  toast(track && track.id ? `تمت الإضافة إلى «${name}» ✓` : 'تم إنشاء القائمة ✓');
+  return p;
+}
+function openPl(id) { plOpen = id; plEdit = false; if (curTab !== 'lib') { curTab = 'lib'; } showTab('lib'); $('#v-pl').scrollTop = 0; }
+function renderPl() {
+  const p = plById(plOpen); if (!p) { plOpen = null; return showTab('lib'); }
+  const n = p.tracks.length;
+  $('#v-pl').innerHTML = `<div class="plv-top"><button class="ib soft" id="plBack" aria-label="رجوع">${ic('back')}</button>
+      <div style="display:flex;gap:8px">${n ? `<button class="btn sm${plEdit ? ' pri' : ''}" id="plEditB">${plEdit ? ic('check') + 'تم' : ic('edit') + 'ترتيب'}</button>` : ''}${p.fixed ? '' : `<button class="ib soft" id="plMore" aria-label="خيارات">${ic('more')}</button>`}</div></div>
+    ${cover(p, 'plv-cover')}
+    <h2 class="plv-name">${esc(p.name)}</h2>
+    <div class="plv-meta">${n} مقطع${n ? ' · ' + durText(plDur(p)) : ''}</div>
+    ${n ? `<div class="plv-acts"><button class="btn pri" id="plPlay">${ic('play', 'f')}تشغيل</button><button class="btn" id="plShuf">${ic('shuf')}عشوائي</button></div>` : ''}
+    <div class="list" id="plList">${p.tracks.map((t, i) => row(t, { i, num: plEdit ? null : i + 1, ctx: 'pl', grip: plEdit, rm: plEdit })).join('')}</div>
+    ${!n ? `<div class="empty"><div class="ico">${ic('note')}</div><h3>القائمة فارغة</h3><p>ابحث عن أغنية واضغط ⋯ ثم «إضافة إلى قائمة تشغيل».</p><button class="btn pri" data-go="search">${ic('search')}ابحث الآن</button></div>` : ''}`;
+  $('#plBack').onclick = () => { plOpen = null; showTab('lib'); };
+  const e = $('#plEditB'); if (e) e.onclick = () => { plEdit = !plEdit; renderPl(); };
+  const m = $('#plMore'); if (m) m.onclick = () => plMenu(p);
+  const pp = $('#plPlay'); if (pp) pp.onclick = () => startQueue(p.tracks, 0, { mode: 'list', listId: p.id, listName: p.name, shuffle: false });
+  const ps = $('#plShuf'); if (ps) ps.onclick = () => startQueue(p.tracks, Math.floor(Math.random() * n), { mode: 'list', listId: p.id, listName: p.name, shuffle: true });
+  if (plEdit) sortable($('#plList'), (from, to) => { p.tracks.splice(to, 0, p.tracks.splice(from, 1)[0]); save(); renderPl(); });
+}
+function plMenu(p) {
+  openSheet(`<div class="shead"><h3>${esc(p.name)}</h3></div><div class="sbody">
+    <button class="opt" data-a="rename">${ic('edit')}إعادة التسمية</button>
+    <button class="opt" data-a="share">${ic('link')}مشاركة القائمة برابط</button>
+    <button class="opt" data-a="queue">${ic('addl')}إضافة لقائمة الانتظار</button>
+    <button class="opt danger" data-a="del">${ic('trash')}حذف القائمة</button></div>`, async a => {
+    if (a === 'rename') { const n = await promptModal({ title: 'إعادة التسمية', value: p.name, ok: 'حفظ' }); if (n) { p.name = n; save(); renderPl(); } }
+    if (a === 'share') sharePlaylist(p);
+    if (a === 'queue') { p.tracks.forEach(t => addToQueue(t, true)); toast('تمت الإضافة لقائمة الانتظار'); }
+    if (a === 'del') { if (await confirmModal({ title: 'حذف القائمة؟', text: `سيتم حذف «${p.name}» نهائياً من هذا الجهاز.`, ok: 'حذف', danger: true })) { DB.playlists = DB.playlists.filter(x => x.id !== p.id); save(); plOpen = null; showTab('lib'); toast('تم الحذف'); } }
+  });
+}
+function addToPl(p, t) {
+  if (p.tracks.find(x => x.id === t.id)) { toast(`موجودة مسبقاً في «${p.name}»`); return; }
+  p.tracks.push(slim(t)); save(); toast(p.id === 'fav' ? 'أضيفت للمفضلة ♥' : `تمت الإضافة إلى «${p.name}» ✓`);
+  if (curTab === 'lib') plOpen ? renderPl() : renderLib();
+  renderNow();
+}
+function toggleFav(t) {
+  const f = plById('fav'); const i = f.tracks.findIndex(x => x.id === t.id);
+  if (i >= 0) { f.tracks.splice(i, 1); save(); toast('أزيلت من المفضلة'); renderNow(); if (curTab === 'lib') plOpen ? renderPl() : renderLib(); }
+  else addToPl(f, t);
+}
+function addToPlSheet(t) {
+  openSheet(`<div class="shead"><h3>إضافة إلى قائمة</h3></div><div class="sbody">
+    <button class="opt" data-a="new" style="color:var(--acc)">${ic('plus')}قائمة جديدة</button>
+    ${DB.playlists.map(p => `<button class="opt" data-a="${p.id}">${p.id === 'fav' ? ic('heart') : ic('note')}<span style="flex:1">${esc(p.name)}</span><span class="note">${p.tracks.length}</span></button>`).join('')}</div>`,
+    a => { if (a === 'new') newPlaylist(t); else addToPl(plById(a), t); });
+}
+function sharePlaylist(p) {
+  const data = JSON.stringify({ n: p.name, t: p.tracks.map(x => [x.id, x.title, x.artist, x.dur]) });
+  const bytes = new TextEncoder().encode(data); let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b));
+  const b64 = btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const url = location.href.split('#')[0] + '#pl=' + b64;
+  shareOrCopy({ title: p.name, text: `قائمة «${p.name}» على نغم`, url });
+}
+async function handleHash() {
+  const m = location.hash.match(/#pl=([\w-]+)/); if (!m) return;
+  history.replaceState(null, '', location.href.split('#')[0]);
+  try {
+    let s = m[1].replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+    const bin = atob(s), bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    const d = JSON.parse(new TextDecoder().decode(bytes));
+    const tracks = d.t.map(([id, title, artist, dur]) => ({ id, title, artist, dur }));
+    if (await confirmModal({ title: 'استيراد قائمة؟', text: `وصلتك قائمة «${d.n}» فيها ${tracks.length} مقطع. تبي تحفظها في مكتبتك؟`, ok: 'حفظ' })) {
+      DB.playlists.push({ id: uid(), name: d.n, tracks, created: Date.now() }); save(); toast('تم حفظ القائمة ✓'); showTab('lib');
+    }
+  } catch (e) { toast('رابط القائمة غير صالح'); }
+}
+async function shareOrCopy(o) {
+  if (navigator.share) { try { await navigator.share(o); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  try { await navigator.clipboard.writeText(o.url); toast('تم نسخ الرابط ✓'); } catch (e) { promptModal({ title: 'انسخ الرابط', value: o.url, ok: 'تم' }); }
+}
+
+/* قائمة الانتظار */
+function addToQueue(t, silent) {
+  if (!PL.queue.length) { startQueue([t], 0, { mode: 'list', listName: 'قائمة الانتظار' }); return; }
+  PL.queue.push(slim(t)); saveSession(); refreshQueueSheet(); if (!silent) toast('أضيفت لقائمة الانتظار');
+}
+function playNext(t) {
+  if (!PL.queue.length) { startQueue([t], 0, { mode: 'list', listName: 'قائمة الانتظار' }); return; }
+  PL.queue.splice(PL.idx + 1, 0, slim(t)); saveSession(); refreshQueueSheet(); toast('ستعمل بعد المقطع الحالي');
+}
+let queueOpen = false;
+function queueHTML() {
+  const t = cur(); const up = PL.queue.slice(PL.idx + 1);
+  return `<div class="shead"><h3>قائمة الانتظار</h3>${up.length ? '<button class="link" data-a="clear">مسح التالي</button>' : ''}</div><div class="sbody" id="qBody">
+    ${t ? `<div class="qlabel">يعمل الآن</div><div class="list">${row(t, { ctx: 'queue-now' })}</div>` : ''}
+    <div class="qlabel"><span>${PL.mode === 'radio' ? 'التالي · اقتراحات مشابهة' : 'التالي · ' + esc(PL.listName || 'القائمة')}</span></div>
+    <div class="list" id="qList">${up.map((x, k) => row(x, { i: PL.idx + 1 + k, ctx: 'queue', grip: true, rm: true })).join('') || '<p class="note">لا يوجد مقاطع تالية' + (PL.mode === 'radio' && S().radio ? ' — ستُضاف اقتراحات تلقائياً' : '') + '</p>'}</div></div>`;
+}
+function openQueue() {
+  queueOpen = true;
+  openSheet(queueHTML(), a => { if (a === 'clear') { PL.queue.splice(PL.idx + 1); saveSession(); refreshQueueSheet(); return true; } }, () => { queueOpen = false; });
+  bindQueueSort();
+}
+function refreshQueueSheet() {
+  if (!queueOpen) return;
+  const b = $('#qBody'); const st = b ? b.scrollTop : 0;
+  $('#sheetIn').innerHTML = queueHTML();
+  const nb = $('#qBody'); if (nb) nb.scrollTop = st;
+  bindQueueSort();
+}
+function bindQueueSort() {
+  const l = $('#qList'); if (!l) return;
+  sortable(l, (from, to) => { const base = PL.idx + 1; PL.queue.splice(base + to, 0, PL.queue.splice(base + from, 1)[0]); saveSession(); refreshQueueSheet(); });
+}
+
+/* قائمة خيارات المقطع */
+function trackMenu(t, ctx, i) {
+  const fav = isFav(t.id);
+  openSheet(`<div class="shead"><div class="th"><img src="${thumb(t.id)}" alt=""></div><div class="m"><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></div></div><div class="sbody">
+    <button class="opt" data-a="next">${ic('nextup')}تشغيل التالي</button>
+    <button class="opt" data-a="queue">${ic('queue')}إضافة لقائمة الانتظار</button>
+    <button class="opt" data-a="pl">${ic('addl')}إضافة إلى قائمة تشغيل</button>
+    <button class="opt${fav ? ' on' : ''}" data-a="fav">${ic('heart', fav ? 'f' : '')}${fav ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}</button>
+    <button class="opt" data-a="radio">${ic('radio')}تشغيل أغانٍ مشابهة</button>
+    <button class="opt" data-a="share">${ic('share')}مشاركة</button>
+    <button class="opt" data-a="yt">${ic('ext')}فتح في يوتيوب</button>
+    ${ctx === 'pl' && !plEdit ? `<button class="opt danger" data-a="rmpl">${ic('trash')}إزالة من هذه القائمة</button>` : ''}
+    ${ctx === 'home' ? `<button class="opt danger" data-a="rmh">${ic('trash')}إزالة من السجل</button>` : ''}</div>`, a => {
+    if (a === 'next') playNext(t);
+    if (a === 'queue') addToQueue(t);
+    if (a === 'pl') { setTimeout(() => addToPlSheet(t), 320); }
+    if (a === 'fav') toggleFav(t);
+    if (a === 'radio') startQueue([t], 0, { mode: 'radio', open: true });
+    if (a === 'share') shareOrCopy({ title: t.title, url: 'https://youtu.be/' + t.id });
+    if (a === 'yt') window.open('https://www.youtube.com/watch?v=' + t.id, '_blank');
+    if (a === 'rmpl') { const p = plById(plOpen); p.tracks.splice(i, 1); save(); renderPl(); }
+    if (a === 'rmh') { DB.history = DB.history.filter(x => x.id !== t.id); save(); renderHome(); }
+  });
+}
+
+/* Sheet + Modal */
+let sheetCb = null, sheetClose = null;
+function openSheet(html, onAct, onClose) {
+  $('#sheetIn').innerHTML = html; sheetCb = onAct; sheetClose = onClose || null;
+  $('#sheetWrap').classList.add('open');
+}
+function closeSheet() {
+  $('#sheetWrap').classList.remove('open'); sheetCb = null;
+  if (sheetClose) { const f = sheetClose; sheetClose = null; f(); }
+}
+$('#sheetWrap .bd').onclick = closeSheet;
+$('#sheetIn').addEventListener('click', e => {
+  const o = e.target.closest('[data-a]');
+  if (o && sheetCb) { const keep = sheetCb(o.dataset.a); if (!keep) closeSheet(); return; }
+  const r = e.target.closest('.row');
+  if (r && queueOpen) {
+    if (e.target.closest('[data-act=rm]')) { const i = +r.dataset.i; PL.queue.splice(i, 1); saveSession(); refreshQueueSheet(); return; }
+    if (r.dataset.ctx === 'queue') { PL.idx = +r.dataset.i; loadCurrent(); refreshQueueSheet(); }
+  }
+});
+(() => { // سحب الـ sheet للأسفل لإغلاقه
+  const sh = $('.sheet'); let y0 = null;
+  sh.addEventListener('touchstart', e => { const b = $('.sbody', sh); if (e.target.closest('.grip')) return; if (b && b.contains(e.target) && b.scrollTop > 0) return; y0 = e.touches[0].clientY; sh.style.transition = 'none'; }, { passive: true });
+  sh.addEventListener('touchmove', e => { if (y0 == null) return; const dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = `translateY(${dy}px)`; }, { passive: true });
+  sh.addEventListener('touchend', e => { if (y0 == null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; sh.style.transition = ''; sh.style.transform = ''; if (dy > 90) closeSheet(); });
+})();
+function modal(html) { $('#mbox').innerHTML = html; $('#modal').classList.add('open'); }
+function closeModal() { $('#modal').classList.remove('open'); }
+function promptModal({ title, value = '', placeholder = '', ok = 'حفظ' }) {
+  return new Promise(res => {
+    modal(`<h3>${esc(title)}</h3><form id="mf"><input id="mIn" value="${esc(value)}" placeholder="${esc(placeholder)}" maxlength="400" autocomplete="off"></form><div class="acts"><button class="btn" id="mNo">إلغاء</button><button class="btn pri" id="mOk">${esc(ok)}</button></div>`);
+    const inp = $('#mIn'); setTimeout(() => { inp.focus(); inp.select(); }, 60);
+    const done = v => { closeModal(); res(v); };
+    $('#mOk').onclick = () => done(inp.value.trim() || null);
+    $('#mf').onsubmit = e => { e.preventDefault(); done(inp.value.trim() || null); };
+    $('#mNo').onclick = () => done(null);
+  });
+}
+function confirmModal({ title, text = '', ok = 'تأكيد', danger }) {
+  return new Promise(res => {
+    modal(`<h3>${esc(title)}</h3><p>${esc(text)}</p><div class="acts"><button class="btn" id="mNo">إلغاء</button><button class="btn ${danger ? 'danger' : 'pri'}" id="mOk">${esc(ok)}</button></div>`);
+    $('#mOk').onclick = () => { closeModal(); res(true); };
+    $('#mNo').onclick = () => { closeModal(); res(false); };
+  });
+}
+
+/* السحب لإعادة الترتيب */
+function sortable(list, onDone) {
+  $$('.grip', list).forEach(g => {
+    g.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      const rowEl = g.closest('.row'); const rows = () => $$(':scope > .row', list);
+      const from = rows().indexOf(rowEl);
+      const sc = list.closest('.view') || list.closest('.sbody');
+      let startY = e.clientY; rowEl.classList.add('drag');
+      try { g.setPointerCapture(e.pointerId); } catch (x) { }
+      const move = ev => {
+        if (sc) {
+          const r = sc.getBoundingClientRect(); let d = 0;
+          if (ev.clientY < r.top + 70) d = -12; else if (ev.clientY > r.bottom - 150) d = 12;
+          if (d) { const b = sc.scrollTop; sc.scrollTop += d; startY -= (sc.scrollTop - b); }
+        }
+        let dy = ev.clientY - startY;
+        const pv = rowEl.previousElementSibling, nx = rowEl.nextElementSibling;
+        if (pv && pv.classList.contains('row') && dy < -pv.offsetHeight / 2) { list.insertBefore(rowEl, pv); startY -= pv.offsetHeight; dy += pv.offsetHeight; }
+        else if (nx && nx.classList.contains('row') && dy > nx.offsetHeight / 2) { list.insertBefore(nx, rowEl); startY += nx.offsetHeight; dy -= nx.offsetHeight; }
+        rowEl.style.transform = `translateY(${dy}px)`;
+      };
+      const up = () => {
+        g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', up); g.removeEventListener('pointercancel', up);
+        rowEl.classList.remove('drag'); rowEl.style.transform = '';
+        const to = rows().indexOf(rowEl);
+        if (to !== from) onDone(from, to);
+      };
+      g.addEventListener('pointermove', move); g.addEventListener('pointerup', up); g.addEventListener('pointercancel', up);
+    });
+  });
+}
+
+/* الإعدادات */
+const ACCENTS = [['gold', '#e9b660'], ['coral', '#ff7d5c'], ['rose', '#ff7aa2'], ['violet', '#a88bff'], ['teal', '#41d1b7']];
+function tg(k) { return `<button class="tg${S()[k] ? ' on' : ''}" data-tg="${k}" aria-label="تبديل"></button>`; }
+function seg(k, opts) { return `<div class="seg">${opts.map(([v, l]) => `<button data-seg="${k}" data-v="${v}" class="${String(S()[k]) === String(v) ? 'on' : ''}">${l}</button>`).join('')}</div>`; }
+function setRow(icon, title, sub, right = '', cls = '') { return `<div class="set ${cls}"><div class="si">${ic(icon)}</div><div class="sl"><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</div>${right}</div>`; }
+function renderSet() {
+  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  $('#v-set').innerHTML = `<h1 class="lt">الإعدادات</h1>
+  ${!standalone ? `<div class="card install"><img src="icons/icon-192.png" alt=""><div><b>ثبّت نغم على شاشتك</b><p>${ios ? 'اضغط زر المشاركة <b>⎋</b> في سفاري ثم «إضافة إلى الشاشة الرئيسية».' : 'من قائمة المتصفح اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».'}</p></div></div>` : ''}
+  <div class="grp"><h3>الملف الشخصي</h3><div class="card">
+    <div class="set col"><div class="top"><div class="si">${ic('user')}</div><div class="sl"><b>اسمك</b><small>يظهر في الترحيب بالصفحة الرئيسية</small></div></div>
+    <input class="tx rtl" id="sName" value="${esc(DB.name)}" placeholder="اكتب اسمك" style="margin-top:10px" maxlength="30"></div>
+  </div></div>
+
+  <div class="grp"><h3>المظهر</h3><div class="card">
+    <div class="set col"><div class="top"><div class="si">${ic('palette')}</div><div class="sl"><b>لون التطبيق</b></div></div>
+    <div class="sw">${ACCENTS.map(([k, c]) => `<button data-acc="${k}" class="${S().accent === k ? 'on' : ''}" style="background:${c}" aria-label="${k}"></button>`).join('')}</div></div>
+  </div></div>
+
+  <div class="grp"><h3>التشغيل</h3><div class="card">
+    ${setRow('radio', 'تشغيل أغانٍ مشابهة تلقائياً', 'عند تشغيل أغنية من البحث، يكمل بأغانٍ مشابهة بعد انتهائها', tg('radio'))}
+    ${setRow('clock', 'تجاهل المقاطع الطويلة', 'لا يقترح مقاطع أقصر من دقيقة أو أطول من 10 دقائق', tg('skipLong'))}
+    <div class="set col"><div class="top"><div class="si">${ic('wave')}</div><div class="sl"><b>جودة الصوت</b><small>الموفّرة تستهلك بيانات أقل</small></div></div>${seg('quality', [['high', 'عالية'], ['saver', 'موفّرة للبيانات']])}</div>
+    <div class="set col"><div class="top"><div class="si">${ic('play')}</div><div class="sl"><b>طريقة التشغيل</b><small><b style="color:var(--acc2)">الصوت المباشر</b> يعمل في الخلفية ومع قفل الشاشة. <b style="color:var(--acc2)">مشغّل يوتيوب</b> أثبت لكنه يتوقف عند الخروج من التطبيق. «تلقائي» يجرب الأول ثم الثاني.</small></div></div>
+    ${seg('engine', [['auto', 'تلقائي'], ['audio', 'صوت مباشر'], ['yt', 'مشغّل يوتيوب']])}</div>
+    <div class="set col"><div class="top"><div class="si">${ic('clock')}</div><div class="sl"><b>عدد عناصر السجل</b></div></div>${seg('histMax', [[10, '10'], [20, '20'], [30, '30']])}</div>
+  </div></div>
+
+  <div class="grp"><h3>مصادر البحث والصوت</h3><div class="card">
+    <div class="set col"><div class="top"><div class="si">${ic('server')}</div><div class="sl"><b>المصدر</b><small>خوادم مفتوحة المصدر تجلب نتائج وصوت يوتيوب</small></div></div>${seg('source', [['auto', 'تلقائي'], ['piped', 'Piped'], ['inv', 'Invidious']])}</div>
+    <div class="set col"><div class="top"><div class="si">${ic('link')}</div><div class="sl"><b>خادم مخصص (اختياري)</b><small>رابط خادم Piped API أو Invidious تثق فيه</small></div></div>
+      <input class="tx" id="sCustom" value="${esc(S().custom)}" placeholder="https://..." inputmode="url" autocapitalize="off" style="margin-top:10px"></div>
+    <div class="set col"><div class="top"><div class="si">${ic('key')}</div><div class="sl"><b>مفتاح YouTube API (اختياري)</b><small>يجعل البحث أسرع وأثبت. مجاني من Google Cloud Console ← YouTube Data API v3</small></div></div>
+      <input class="tx" id="sKey" value="${esc(S().ytKey)}" placeholder="AIza..." autocapitalize="off" autocomplete="off" style="margin-top:10px"></div>
+    <div class="set col"><button class="btn sm" id="sTest" style="align-self:flex-start">${ic('server')}فحص الاتصال بالخوادم</button><div class="testout" id="testOut"></div></div>
+  </div></div>
+
+  <div class="grp"><h3>البيانات (محفوظة على هذا الجهاز فقط)</h3><div class="card">
+    <div class="set tap" data-do="export"><div class="si">${ic('up')}</div><div class="sl"><b>نسخة احتياطية</b><small>احفظ قوائمك في ملف لنقلها لجهاز آخر</small></div>${ic('chev')}</div>
+    <div class="set tap" data-do="import"><div class="si">${ic('dl')}</div><div class="sl"><b>استعادة من نسخة</b><small>تُدمج القوائم مع الموجودة</small></div>${ic('chev')}</div>
+    <div class="set tap" data-do="clrH"><div class="si">${ic('clock')}</div><div class="sl"><b>مسح سجل التشغيل</b></div></div>
+    <div class="set tap" data-do="clrS"><div class="si">${ic('search')}</div><div class="sl"><b>مسح عمليات البحث</b></div></div>
+    <div class="set tap" data-do="wipe"><div class="si" style="color:var(--danger)">${ic('trash')}</div><div class="sl"><b style="color:var(--danger)">حذف كل البيانات</b></div></div>
+  </div></div>
+
+  <div class="grp"><h3>حول</h3><div class="card">
+    ${setRow('info', 'نغم 1.0', 'كل مستخدم يحفظ قوائمه وسجله على جهازه بشكل مستقل. المحتوى من يوتيوب عبر خوادم عامة، وقد يتعذر تشغيل بعض المقاطع.')}
+  </div></div>`;
+
+  $('#sName').onchange = e => { DB.name = e.target.value.trim(); save(); };
+  $('#sCustom').onchange = e => { S().custom = norm(e.target.value); save(); toast('تم الحفظ'); };
+  $('#sKey').onchange = e => { S().ytKey = e.target.value.trim(); save(); toast('تم حفظ المفتاح'); };
+  $('#sTest').onclick = testSources;
+}
+async function testSources() {
+  const out = $('#testOut'); out.innerHTML = '<div class="spin" style="width:22px;height:22px;border-width:2px"></div>';
+  const ID = 'dQw4w9WgXcQ';
+  const line = (n, r) => r.status === 'fulfilled' ? `<div class="ok">✓ ${n}: يعمل (${esc(new URL(r.value._base || 'https://x').host)})</div>` : `<div class="bad">✗ ${n}: لا يعمل حالياً</div>`;
+  const tasks = [tryType('piped', (b, s) => P.stream(b, ID, s), 6), tryType('inv', (b, s) => I.stream(b, ID, s), 6)];
+  if (ytKey()) tasks.push(Y.details([ID]).then(d => { if (!d[ID]) throw 0; return { _base: 'https://www.googleapis.com' }; }));
+  const r = await Promise.allSettled(tasks);
+  out.innerHTML = line('Piped (بحث + صوت بالخلفية)', r[0]) + line('Invidious (بحث + صوت بالخلفية)', r[1]) + (ytKey() ? line('YouTube API (بحث)', r[2]) : '<div>• YouTube API: لم يُضف مفتاح</div>') +
+    `<div>• مشغّل يوتيوب الرسمي: ${window.YT && YT.Player ? '<span class="ok">جاهز</span>' : 'يتم تحميله عند الحاجة'}</div>`;
+}
+function exportData() {
+  const data = JSON.stringify({ app: 'nagham', v: 1, at: new Date().toISOString(), name: DB.name, playlists: DB.playlists, history: DB.history }, null, 1);
+  const name = `nagham-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  const file = new File([data], name, { type: 'application/json' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], title: name }).catch(() => { }); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+$('#fileIn').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (d.app !== 'nagham' || !Array.isArray(d.playlists)) throw 0;
+    let n = 0;
+    for (const p of d.playlists) {
+      if (!p || !Array.isArray(p.tracks)) continue;
+      const ex = plById(p.id);
+      if (ex) { const have = new Set(ex.tracks.map(t => t.id)); p.tracks.forEach(t => { if (!have.has(t.id)) ex.tracks.push(slim(t)); }); }
+      else { DB.playlists.push({ id: p.id || uid(), name: p.name || 'قائمة', tracks: p.tracks.map(slim), created: p.created || Date.now() }); }
+      n++;
+    }
+    if (!DB.history.length && Array.isArray(d.history)) DB.history = d.history.map(slim).slice(0, +S().histMax || 10);
+    if (!DB.name && d.name) DB.name = d.name;
+    save(); toast(`تمت استعادة ${n} قائمة ✓`); renderSet();
+  } catch (x) { toast('الملف غير صالح'); }
+};
+function applyAccent() {
+  document.documentElement.dataset.accent = S().accent || 'gold';
+}
+
+/* ---------------- ربط الأحداث ---------------- */
+function listClick(e) {
+  const go = e.target.closest('[data-go]');
+  if (go) { if (go.dataset.go === 'search') { plOpen = null; showTab('search'); setTimeout(() => $('#q').focus(), 50); } else { plOpen = null; showTab(go.dataset.go); } return; }
+  const retry = e.target.closest('[data-retry]'); if (retry) { doSearch(retry.dataset.retry); return; }
+  const qb = e.target.closest('[data-q]'); if (qb) { doSearch(qb.dataset.q); return; }
+  const plb = e.target.closest('[data-pl]'); if (plb) { openPl(plb.dataset.pl); return; }
+  const r = e.target.closest('.row'); if (!r) return;
+  const ctx = r.dataset.ctx, i = +r.dataset.i;
+  let list;
+  if (ctx === 'home') list = DB.history;
+  else if (ctx === 'pl') list = plById(plOpen).tracks;
+  else list = ctxTracks[ctx] || [];
+  const t = list[i]; if (!t) return;
+  if (e.target.closest('[data-act=more]')) { trackMenu(t, ctx, i); return; }
+  if (e.target.closest('[data-act=rm]')) { if (ctx === 'pl') { plById(plOpen).tracks.splice(i, 1); save(); renderPl(); } return; }
+  if (e.target.closest('.grip')) return;
+  if (ctx === 'pl') {
+    if (plEdit) return;
+    const p = plById(plOpen);
+    if (cur() && cur().id === t.id && PL.listId === p.id) { openFP(); if (!PL.playing) toggle(); return; }
+    startQueue(p.tracks, i, { mode: 'list', listId: p.id, listName: p.name });
+  } else if (ctx === 'ytpl') {
+    startQueue(list, i, { mode: 'list', listName: ytplData ? ytplData.name : 'قائمة يوتيوب' });
+  } else {
+    if (cur() && cur().id === t.id) { openFP(); if (!PL.playing) toggle(); return; }
+    playRadio(t);
+  }
+}
+$('#app').addEventListener('click', listClick);
+$$('#tabs button').forEach(b => b.onclick = () => {
+  const t = b.dataset.tab;
+  if (t === curTab) { if (t === 'lib' && plOpen) { plOpen = null; showTab('lib'); return; } const v = $('.view.active'); v.scrollTo({ top: 0, behavior: 'smooth' }); if (t === 'search') $('#q').focus(); return; }
+  showTab(t);
+});
+$('#sForm').onsubmit = e => { e.preventDefault(); doSearch($('#q').value); };
+$('#q').addEventListener('input', onQInput);
+$('#q').addEventListener('focus', onQInput);
+$('#qClear').onclick = () => { $('#q').value = ''; onQInput(); $('#q').focus(); };
+$('#qPaste').onclick = async () => {
+  try { const t = (await navigator.clipboard.readText()).trim(); if (t) { $('#q').value = t; doSearch(t); } else toast('الحافظة فارغة'); }
+  catch (e) { toast('اضغط مطولاً على خانة البحث واختر «لصق»'); $('#q').focus(); }
+};
+$('#sugg').addEventListener('click', e => { const s = e.target.closest('[data-q]'); if (s) doSearch(s.dataset.q); });
+$('#v-set').addEventListener('click', async e => {
+  const t = e.target.closest('[data-tg]'); if (t) { S()[t.dataset.tg] = !S()[t.dataset.tg]; save(); t.classList.toggle('on'); return; }
+  const s = e.target.closest('[data-seg]'); if (s) {
+    const k = s.dataset.seg; let v = s.dataset.v; if (k === 'histMax') { v = +v; DB.history = DB.history.slice(0, v); }
+    S()[k] = v; save(); renderSet();
+    if (k === 'source') { DB.inst.piped = null; DB.inst.inv = null; bad.clear(); streamCache.clear(); }
+    if (k === 'engine' && v !== 'audio') YE.loadApi();
+    return;
+  }
+  const a = e.target.closest('[data-acc]'); if (a) { S().accent = a.dataset.acc; save(); applyAccent(); renderSet(); return; }
+  const d = e.target.closest('[data-do]'); if (!d) return;
+  const act = d.dataset.do;
+  if (act === 'export') exportData();
+  if (act === 'import') $('#fileIn').click();
+  if (act === 'clrH' && await confirmModal({ title: 'مسح السجل؟', ok: 'مسح', danger: true })) { DB.history = []; save(); toast('تم مسح السجل'); }
+  if (act === 'clrS') { DB.searches = []; save(); toast('تم المسح'); renderSearchIdle(); }
+  if (act === 'wipe' && await confirmModal({ title: 'حذف كل البيانات؟', text: 'سيتم حذف كل القوائم والسجل والإعدادات من هذا الجهاز. لا يمكن التراجع.', ok: 'حذف الكل', danger: true })) {
+    localStorage.removeItem(KEY); location.reload();
+  }
+});
+
+// المشغل
+$('#mini').onclick = e => { if (e.target.closest('#mPlay')) { toggle(); return; } if (e.target.closest('#mNext')) { next(); return; } openFP(); };
+$('#fpClose').onclick = closeFP;
+$('#bPlay').onclick = toggle;
+$('#bNext').onclick = () => next();
+$('#bPrev').onclick = prev;
+$('#bShuf').onclick = () => {
+  PL.shuffle = !PL.shuffle;
+  if (PL.mode === 'list') {
+    if (PL.shuffle) applyShuffle();
+    else if (PL.orig) { const c = cur(); const extra = PL.queue.filter(t => !PL.orig.find(o => o.id === t.id)); PL.queue = [...PL.orig, ...extra]; PL.idx = Math.max(0, PL.queue.findIndex(t => t.id === c.id)); PL.orig = null; }
+  }
+  toast(PL.shuffle ? 'التشغيل العشوائي: مفعّل' : 'التشغيل العشوائي: متوقف');
+  renderNow(); saveSession();
+};
+$('#bRep').onclick = () => {
+  PL.repeat = PL.repeat === 'off' ? 'all' : PL.repeat === 'all' ? 'one' : 'off';
+  toast(PL.repeat === 'off' ? 'التكرار: متوقف' : PL.repeat === 'all' ? 'تكرار القائمة' : 'تكرار المقطع الحالي');
+  renderNow(); saveSession();
+};
+$('#fpFav').onclick = () => { const t = cur(); if (t) toggleFav(t); };
+$('#bAdd').onclick = () => { const t = cur(); if (t) addToPlSheet(t); };
+$('#bShare').onclick = () => { const t = cur(); if (t) shareOrCopy({ title: t.title, url: 'https://youtu.be/' + t.id }); };
+$('#bQueue').onclick = openQueue;
+$('#fpMore').onclick = () => { const t = cur(); if (t) trackMenu(t, 'player', PL.idx); };
+$('#bSleep').onclick = () => {
+  const on = sleepT.until || sleepT.eot;
+  openSheet(`<div class="shead"><h3>مؤقت النوم</h3></div><div class="sbody">
+    ${[15, 30, 45, 60, 90].map(m => `<button class="opt" data-a="${m}">${ic('moon')}بعد ${m} دقيقة</button>`).join('')}
+    <button class="opt${sleepT.eot ? ' on' : ''}" data-a="eot">${ic('note')}بعد انتهاء المقطع الحالي</button>
+    ${on ? `<button class="opt danger" data-a="off">${ic('x')}إيقاف المؤقت</button>` : ''}</div>`, a => {
+    clearSleep();
+    if (a === 'off') { toast('تم إيقاف المؤقت'); return; }
+    if (a === 'eot') { sleepT.eot = true; $('#sleepLbl').textContent = '♪'; }
+    else { sleepT.until = Date.now() + a * 60000; checkSleep(); }
+    $('#bSleep').classList.add('on'); toast('تم ضبط مؤقت النوم');
+  });
+};
+let seeking = false;
+const sk = $('#seek');
+sk.addEventListener('input', () => {
+  seeking = true;
+  const d = eng().dur() || (cur() && cur().dur) || 0;
+  sk.style.setProperty('--p', sk.value / 10 + '%');
+  $('#tCur').textContent = fmt(sk.value / 1000 * d);
+});
+sk.addEventListener('change', () => {
+  const d = eng().dur() || 0;
+  if (d) eng().seek(sk.value / 1000 * d);
+  else if (cur() && cur().dur) PL.pendingSeek = sk.value / 1000 * cur().dur;
+  seeking = false; onTime();
+});
+(() => { // سحب المشغل للأسفل لإغلاقه
+  const f = $('#fp'); let y0 = null;
+  $$('.fpdrag').forEach(el => {
+    el.addEventListener('touchstart', e => { if (document.body.classList.contains('yt-tap')) return; y0 = e.touches[0].clientY; f.style.transition = 'none'; }, { passive: true });
+    el.addEventListener('touchmove', e => { if (y0 == null) return; const dy = Math.max(0, e.touches[0].clientY - y0); f.style.transform = `translateY(${dy}px)`; }, { passive: true });
+    el.addEventListener('touchend', e => { if (y0 == null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; f.style.transition = ''; f.style.transform = ''; if (dy > 110) closeFP(); });
+  });
+})();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { onTime(); updatePlayBtns(); } else saveSession(); });
+window.addEventListener('pagehide', () => saveSession());
+
+/* ---------------- التشغيل الأولي ---------------- */
+applyAccent();
+restoreSession();
+renderSearchIdle();
+showTab('home');
+handleHash();
+setTimeout(() => YE.loadApi(), 1500);
+refreshInstanceLists();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { });
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
+</script>
+</body>
+</html>
