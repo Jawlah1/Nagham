@@ -159,6 +159,14 @@ form.sbar .ib{width:32px;height:32px;color:var(--mute)}
 .plhead{display:flex;gap:14px;align-items:center;padding:14px;margin-bottom:10px}
 .plhead .cv{width:84px;height:84px;border-radius:14px}
 
+.stabs{display:flex;gap:8px;margin:6px 0 12px}
+.stabs button{height:38px;padding:0 16px;border-radius:19px;background:var(--card2);border:1px solid var(--line);font-size:14px;font-weight:600;color:var(--mute);display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.stabs button svg{width:18px;height:18px}
+.stabs button.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.plbadge{position:absolute;bottom:5px;left:5px;display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,.8);font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px}
+.plbadge svg{width:13px;height:13px}
+.more{display:flex;justify-content:center;padding:18px 0 8px;min-height:60px}
+.more .spin{width:28px;height:28px;border-width:3px}
 /* Library */
 .lrow{display:flex;align-items:center;gap:14px;padding:9px 0}
 .lrow .cv{width:64px;height:64px;border-radius:14px}
@@ -286,6 +294,34 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;bac
 #ytHost.tap{opacity:1;pointer-events:auto;z-index:45;box-shadow:0 30px 70px rgba(0,0,0,.6)}
 #ytHost iframe{width:100%;height:100%;border:0}
 
+/* Splash */
+#splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  background:radial-gradient(120% 80% at 50% 38%,#2a1b0d 0%,#120d09 38%,#070709 72%);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.8,.2,1),filter .7s;overflow:hidden}
+#splash.out{opacity:0;transform:scale(1.08);filter:blur(10px);pointer-events:none}
+.sp-glow{position:absolute;width:520px;height:520px;border-radius:50%;left:50%;top:40%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(240,190,100,.28),rgba(240,190,100,0) 62%);animation:spGlow 3.2s ease-in-out infinite}
+@keyframes spGlow{0%,100%{transform:translate(-50%,-50%) scale(.9);opacity:.7}50%{transform:translate(-50%,-50%) scale(1.12);opacity:1}}
+.sp-dust{position:absolute;inset:0;pointer-events:none}
+.sp-dust i{position:absolute;bottom:-10px;width:3px;height:3px;border-radius:50%;background:#f7d894;opacity:0;animation:spDust linear infinite}
+@keyframes spDust{0%{transform:translateY(0);opacity:0}15%{opacity:.8}100%{transform:translateY(-105vh);opacity:0}}
+.sp-logoW{position:relative;width:132px;height:132px;animation:spIn 1.1s cubic-bezier(.2,.9,.25,1.25) both}
+@keyframes spIn{from{opacity:0;transform:scale(.55) translateY(18px);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+.sp-ring{position:absolute;inset:-20px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 55%,#f7d894 75%,#e9b660 88%,transparent 100%);
+  animation:spin 1.6s linear infinite;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));opacity:.95}
+#splash.ready .sp-ring{animation:none;opacity:0;transition:opacity .4s}
+.sp-logo{width:132px;height:132px;border-radius:31px;box-shadow:0 22px 60px rgba(0,0,0,.6),0 0 60px rgba(233,182,96,.25);position:relative}
+.sp-name{margin-top:26px;font-size:38px;font-weight:700;letter-spacing:1px;background:linear-gradient(180deg,#fff6de,#e9b660);-webkit-background-clip:text;background-clip:text;color:transparent;animation:spUp .9s .35s cubic-bezier(.2,.8,.2,1) both}
+.sp-sub{font-size:13px;color:rgba(255,240,210,.5);margin-top:2px;animation:spUp .9s .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes spUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.sp-wave{display:flex;align-items:center;gap:5px;height:34px;margin-top:34px;direction:ltr;animation:spUp .9s .65s both}
+.sp-wave i{width:4px;border-radius:3px;background:linear-gradient(180deg,#ffd08a,#ff6a3d);height:8px;animation:spBar 1.1s ease-in-out infinite}
+@keyframes spBar{0%,100%{height:6px;opacity:.55}50%{height:32px;opacity:1}}
+#splash.ready .sp-wave i{animation-duration:.5s;animation-iteration-count:1}
+.sp-status{margin-top:18px;font-size:14px;color:rgba(255,240,210,.72);min-height:22px;transition:opacity .3s;animation:spUp .9s .8s both}
+.sp-skip{position:absolute;bottom:calc(var(--safeB) + 34px);height:40px;padding:0 22px;border-radius:20px;border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.7);font-size:14px;opacity:0;transform:translateY(10px);transition:all .4s;pointer-events:none}
+.sp-skip.show{opacity:1;transform:none;pointer-events:auto}
+@media (prefers-reduced-motion:reduce){#splash *{animation:none!important}}
+
 /* Sheets / modal */
 #sheetWrap{position:fixed;inset:0;z-index:60;pointer-events:none}
 #sheetWrap .bd{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity .3s}
@@ -325,6 +361,17 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;bac
 </style>
 </head>
 <body class="nomini">
+
+<div id="splash">
+  <div class="sp-glow"></div>
+  <div class="sp-dust" id="spDust"></div>
+  <div class="sp-logoW"><div class="sp-ring"></div><img class="sp-logo" src="icons/icon-512.png" alt=""></div>
+  <div class="sp-name">نغم</div>
+  <div class="sp-sub">موسيقاك، بأناقة</div>
+  <div class="sp-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="sp-status" id="spStatus"></div>
+  <button class="sp-skip" id="spSkip">دخول الآن</button>
+</div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -469,6 +516,9 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;bac
    بدون ما يضيف كل واحد مفتاحه (اختياري):
    ===================================================================== */
 const DEFAULT_YT_KEY = '';
+// رابط خادمك الخاص (nagham_server.py) إذا تبيه يشتغل لكل من يفتح التطبيق بدون إعداد:
+const DEFAULT_SERVER = 'https://nagham-server.onrender.com/';   // مثال: 'https://nagham-server.onrender.com'
+const DEFAULT_SERVER_KEY = '';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -490,7 +540,7 @@ const slim = t => ({ id: t.id, title: t.title || '', artist: t.artist || '', dur
 const KEY = 'nagham.v1';
 const DEF = {
   name: '', history: [], playlists: [], searches: [], session: null,
-  settings: { accent: 'gold', radio: true, skipLong: true, quality: 'high', engine: 'auto', source: 'auto', ytKey: '', custom: '', histMax: 10 },
+  settings: { accent: 'gold', radio: true, skipLong: true, quality: 'high', engine: 'auto', source: 'auto', ytKey: '', custom: '', histMax: 10, server: '', serverKey: '' },
   inst: { piped: null, inv: null, listPiped: [], listInv: [], listAt: 0 }
 };
 let DB = load();
@@ -551,10 +601,10 @@ async function refreshInstanceLists() {
   save();
 }
 // يجرب عدة خوادم بالتوازي (3 كل مرة) ويعتمد أول رد صحيح
-async function tryType(type, fn, maxN = 9) {
+async function tryType(type, fn, maxN = 9, bn = 3) {
   const list = instList(type).slice(0, maxN);
-  for (let i = 0; i < list.length; i += 3) {
-    const batch = list.slice(i, i + 3);
+  for (let i = 0; i < list.length; i += bn) {
+    const batch = list.slice(i, i + bn);
     const ctrl = new AbortController();
     try {
       const res = await Promise.any(batch.map(async b => ({ b, r: await fn(b, ctrl.signal) })));
@@ -576,6 +626,54 @@ async function viaSources(pFn, iFn) {
   throw err || new Error('no-source');
 }
 
+// كل الخوادم بالتوازي — أسرع طريقة لمعرفة إذا فيه خادم شغال
+function viaFast(pFn, iFn) {
+  const src = S().source, tasks = [];
+  if (src !== 'inv') tasks.push(tryType('piped', pFn, 8, 8));
+  if (src !== 'piped') tasks.push(tryType('inv', iFn, 8, 8));
+  return Promise.any(tasks);
+}
+
+/* خادمك الخاص (nagham_server.py): صوت مباشر بدون إعلانات ويعمل في الخلفية */
+const srv = () => norm(S().server || DEFAULT_SERVER);
+const srvKey = () => (S().serverKey || DEFAULT_SERVER_KEY || '').trim();
+let srvDownUntil = 0, pubDownUntil = 0, fbNoticed = false;
+const srvOk = () => !!srv() && Date.now() > srvDownUntil;
+function srvFail() { srvDownUntil = Date.now() + 60000; }
+const SV = {
+  url(p, params = {}) {
+    const u = new URLSearchParams();
+    for (const k in params) if (params[k] != null) u.set(k, params[k]);
+    if (srvKey()) u.set('k', srvKey());
+    const q = u.toString();
+    return `${srv()}/api/${p}${q ? '?' + q : ''}`;
+  },
+  async get(p, params, ms = 30000) {
+    if (!(await warmUp())) throw new Error('server-down');
+    const d = await fetchJSON(SV.url(p, params), ms);
+    srvWarmAt = Date.now();
+    return d;
+  },
+  audio(id) { return SV.url('audio/' + id, { q: S().quality }); }
+};
+// Render المجاني ينام إذا ما أحد استخدمه — أول طلب يصحّيه (ياخذ حتى دقيقة)
+let srvWarmAt = 0, warming = null, splashOn = true;
+function warmUp() {
+  if (!srv()) return Promise.resolve(false);
+  if (Date.now() - srvWarmAt < 8 * 60000) return Promise.resolve(true);
+  if (warming) return warming;
+  const slow = setTimeout(() => { if (!splashOn) toast('الخادم يصحى من النوم… لحظات', 6000); }, 3000);
+  warming = fetchJSON(SV.url('ping'), 75000)
+    .then(d => { if (!d || !d.ok) throw 0; srvWarmAt = Date.now(); srvDownUntil = 0; return true; })
+    .catch(() => { srvFail(); return false; })
+    .finally(() => { clearTimeout(slow); warming = null; });
+  return warming;
+}
+function noticeFallback() {
+  if (fbNoticed) return; fbNoticed = true;
+  toast(srv() ? 'الخادم لا يستجيب حالياً — التشغيل عبر مشغّل يوتيوب مؤقتاً' : 'التشغيل الحالي عبر مشغّل يوتيوب (فيه إعلانات ويتوقف بالخلفية). الحل: الإعدادات ← خادمك الخاص', 6000);
+}
+
 function pTrack(x) {
   const id = ((x.url || '').match(/[?&]v=([\w-]{11})/) || [])[1];
   return { id, title: x.title || '', artist: cleanArtist(x.uploaderName), dur: +x.duration || 0, views: +x.views || 0 };
@@ -585,7 +683,21 @@ function pickAudio(list, getMime, getRate) {
   const pool = (mp4.length ? mp4 : list).slice().sort((a, b) => getRate(a) - getRate(b));
   return S().quality === 'saver' ? pool[0] : pool[pool.length - 1];
 }
+function pItems(items, type) {
+  if (type === 'playlist') return items.filter(x => x.type === 'playlist' && x.url).map(x => ({
+    pl: ((x.url.match(/list=([\w-]+)/) || [])[1]), title: x.name || x.title || '', author: cleanArtist(x.uploaderName), count: +x.videos || 0, img: x.thumbnail || ''
+  })).filter(x => x.pl);
+  return items.filter(x => (x.type === 'stream' || !x.type) && x.url && !x.isShort && x.duration > 0).map(pTrack).filter(t => t.id);
+}
+const pFilter = type => type === 'playlist' ? 'playlists' : 'videos';
 const P = {
+  searchP: (b, q, type, sig) => fetchJSON(`${b}/search?q=${enc(q)}&filter=${pFilter(type)}`, 8000, sig).then(d => {
+    if (!d || !Array.isArray(d.items)) throw 0;
+    return { items: pItems(d.items, type), next: d.nextpage ? { src: 'piped', b, np: d.nextpage } : null };
+  }),
+  searchNext: (b, q, type, np) => fetchJSON(`${b}/nextpage/search?nextpage=${enc(np)}&q=${enc(q)}&filter=${pFilter(type)}`, 9000).then(d => ({
+    items: pItems((d && d.items) || [], type), next: d && d.nextpage ? { src: 'piped', b, np: d.nextpage } : null
+  })),
   search: (b, q, sig) => fetchJSON(`${b}/search?q=${enc(q)}&filter=videos`, 8000, sig).then(d => {
     if (!d || !Array.isArray(d.items)) throw 0;
     return d.items.filter(x => (x.type === 'stream' || !x.type) && x.url && !x.isShort && x.duration > 0).map(pTrack).filter(t => t.id);
@@ -608,6 +720,14 @@ const P = {
 };
 function iTrack(x) { return { id: x.videoId, title: x.title || '', artist: cleanArtist(x.author), dur: +x.lengthSeconds || 0, views: +x.viewCount || 0 }; }
 const I = {
+  searchP: (b, q, type, page, sig) => fetchJSON(`${b}/api/v1/search?q=${enc(q)}&type=${type === 'playlist' ? 'playlist' : 'video'}&page=${page}`, 8000, sig).then(d => {
+    if (!Array.isArray(d)) throw 0;
+    const abs = u => !u ? '' : /^https?:/.test(u) ? u : b + u;
+    const items = type === 'playlist'
+      ? d.filter(x => x.type === 'playlist' && x.playlistId).map(x => ({ pl: x.playlistId, title: x.title || '', author: cleanArtist(x.author), count: +x.videoCount || 0, img: abs(x.playlistThumbnail) }))
+      : d.filter(x => (x.type === 'video' || !x.type) && !x.liveNow && x.lengthSeconds > 0).map(iTrack).filter(t => t.id);
+    return { items, next: d.length ? { src: 'inv', b, page: page + 1 } : null };
+  }),
   search: (b, q, sig) => fetchJSON(`${b}/api/v1/search?q=${enc(q)}&type=video`, 8000, sig).then(d => {
     if (!Array.isArray(d)) throw 0;
     return d.filter(x => (x.type === 'video' || !x.type) && !x.liveNow && x.lengthSeconds > 0).map(iTrack).filter(t => t.id);
@@ -645,6 +765,19 @@ const Y = {
     }
     return o;
   },
+  async searchP(q, type, tok) {
+    const d = await fetchJSON(`${Y.base}search?part=snippet&type=${type === 'playlist' ? 'playlist' : 'video'}&maxResults=50&q=${enc(q)}&key=${enc(ytKey())}${tok ? '&pageToken=' + enc(tok) : ''}`, 9000);
+    const next = d.nextPageToken ? { src: 'yt', tok: d.nextPageToken } : null;
+    if (type === 'playlist') {
+      const its = (d.items || []).filter(i => i.id && i.id.playlistId);
+      const counts = {};
+      try { const c = await fetchJSON(`${Y.base}playlists?part=contentDetails&maxResults=50&id=${its.map(i => i.id.playlistId).join(',')}&key=${enc(ytKey())}`, 8000); for (const x of c.items || []) counts[x.id] = x.contentDetails.itemCount; } catch (e) { }
+      return { next, items: its.map(i => ({ pl: i.id.playlistId, title: decodeHTML(i.snippet.title), author: cleanArtist(i.snippet.channelTitle), count: counts[i.id.playlistId] || 0, img: ((i.snippet.thumbnails || {}).medium || (i.snippet.thumbnails || {}).default || {}).url || '' })) };
+    }
+    const ids = (d.items || []).map(i => i.id && i.id.videoId).filter(Boolean);
+    const det = await Y.details(ids);
+    return { next, items: ids.map(id => det[id]).filter(t => t && t.dur > 0) };
+  },
   async search(q) {
     const d = await fetchJSON(`${Y.base}search?part=snippet&type=video&maxResults=25&q=${enc(q)}&key=${enc(ytKey())}`, 9000);
     const ids = (d.items || []).map(i => i.id && i.id.videoId).filter(Boolean);
@@ -665,36 +798,77 @@ const Y = {
   }
 };
 
-async function searchTracks(q) {
-  if (ytKey()) { try { const r = await Y.search(q); if (r.length) return r; } catch (e) { } }
-  return viaSources((b, s) => P.search(b, q, s), (b, s) => I.search(b, q, s));
+async function srvSearch(q, type, page) {
+  const d = await SV.get('search', { q, type, page });
+  return { items: d.items || [], next: d.more ? { src: 'srv', page: page + 1 } : null };
 }
+// صفحة نتائج بحث (مقاطع أو قوائم تشغيل) — cur = مؤشر الصفحة التالية
+async function searchPage(q, type, cur) {
+  if (cur) {
+    if (cur.src === 'srv') return srvSearch(q, type, cur.page);
+    if (cur.src === 'yt') return Y.searchP(q, type, cur.tok);
+    if (cur.src === 'piped') return P.searchNext(cur.b, q, type, cur.np);
+    if (cur.src === 'inv') return I.searchP(cur.b, q, type, cur.page);
+  }
+  if (srvOk()) { try { return await srvSearch(q, type, 1); } catch (e) { srvFail(); } }
+  if (ytKey()) { try { const r = await Y.searchP(q, type, ''); if (r.items.length) return r; } catch (e) { } }
+  return viaSources((b, s) => P.searchP(b, q, type, s), (b, s) => I.searchP(b, q, type, 1, s));
+}
+async function searchTracks(q) { return (await searchPage(q, 'video')).items; }
 async function suggestions(q) {
+  if (srvOk()) { try { const d = await SV.get('suggest', { q }, 4000); if (Array.isArray(d)) return d; } catch (e) { } }
   return viaSources((b, s) => P.suggest(b, q, s), (b, s) => I.suggest(b, q, s));
 }
 const streamCache = new Map();
 async function resolve(id, fresh) {
   const c = streamCache.get(id);
   if (c && !fresh && Date.now() - c.t < 3 * 3600e3) return c;
-  const r = await viaSources((b, s) => P.stream(b, id, s), (b, s) => I.stream(b, id, s));
+  const r = await viaFast((b, s) => P.stream(b, id, s), (b, s) => I.stream(b, id, s));
   r.t = Date.now();
   streamCache.set(id, r);
   return r;
 }
 async function getInfo(id) {
+  if (srvOk()) { try { const d = await SV.get('info/' + id, { q: S().quality }); if (d && d.title) return d; } catch (e) { } }
   if (ytKey()) { try { const d = await Y.details([id]); if (d[id]) return d[id]; } catch (e) { } }
-  try { const r = await resolve(id); return Object.assign({ id }, r.track); } catch (e) { }
+  if (Date.now() > pubDownUntil) { try { const r = await resolve(id); return Object.assign({ id }, r.track); } catch (e) { } }
   try { const d = await fetchJSON(`https://noembed.com/embed?url=${enc('https://www.youtube.com/watch?v=' + id)}`, 7000); if (d.title) return { id, title: d.title, artist: cleanArtist(d.author_name), dur: 0 }; } catch (e) { }
   return { id, title: 'مقطع يوتيوب', artist: '', dur: 0 };
 }
 async function getYTPlaylist(id) {
+  if (srvOk()) { try { const d = await SV.get('playlist/' + id, {}, 60000); if (d && d.tracks && d.tracks.length) return d; } catch (e) { } }
   if (ytKey()) { try { const r = await Y.playlist(id); if (r.tracks.length) return r; } catch (e) { } }
   return viaSources((b, s) => P.playlist(b, id, s), (b, s) => I.playlist(b, id, s));
 }
+/* الاقتراحات: أغاني فقط — نستبعد البودكاست والمقابلات والفلوقات وغيرها */
+const NON_MUSIC = /(podcast|بودكاست|بود كاست|reaction|ردة فعل|رده فعل|interview|مقابلة|مقابله|الحلقة|حلقة \d|episode|trailer|تريلر|vlog|فلوق|فلوج|\bnews\b|أخبار|اخبار|tutorial|شرح|تعليم|how to|unboxing|review|مراجعة|gameplay|قيمنق|live ?stream|بث مباشر|stand ?up|ستاند اب|full movie|فيلم كامل|مسلسل|documentary|وثائقي|compilation|تجميعة|#shorts|asmr|prank|مقلب|برنامج|lesson|محاضرة|خطبة|behind the scenes|كواليس|making of|تحليل|analysis|ميمز|karaoke|كاريوكي)/i;
+function normTitle(s) {
+  return String(s || '').toLowerCase()
+    .replace(/[\(\[\{【].*?[\)\]\}】]/g, ' ')
+    .replace(/official|video|audio|lyrics?|music|clip|hd|4k|كلمات|فيديو|كليب|حصري|حصريا|اغنية|أغنية/g, ' ')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ').trim().slice(0, 28);
+}
+function isMusic(t, seed) {
+  const txt = (t.title || '') + ' ' + (t.artist || '');
+  if (NON_MUSIC.test(txt)) return false;
+  if (t.dur) {
+    const max = Math.max(S().skipLong ? 600 : 1500, seed && seed.dur ? seed.dur * 1.5 : 0);
+    if (t.dur < 75 || t.dur > max) return false;
+  }
+  return true;
+}
 async function relatedOf(t) {
+  const clean = l => (l || []).filter(x => x && x.id && x.id !== t.id && isMusic(x, t));
   let list = [];
-  try { list = (await resolve(t.id)).related || []; } catch (e) { }
-  if (list.length < 4 && (t.artist || t.title)) { try { list = list.concat(await searchTracks(t.artist || t.title)); } catch (e) { } }
+  // 1) راديو YouTube Music من الخادم — أفضل اقتراحات بنفس أجواء الأغنية
+  if (srvOk()) { try { list = clean((await SV.get('related/' + t.id)).items); } catch (e) { } }
+  if (list.length < 4 && !srvOk() && Date.now() > pubDownUntil) { try { list = list.concat(clean((await resolve(t.id)).related)); } catch (e) { } }
+  // 2) احتياطي: أغاني نفس الفنان
+  if (list.length < 4 && (t.artist || t.title)) {
+    const ar = /[؀-ۿ]/.test((t.title || '') + (t.artist || ''));
+    const q = t.artist ? (ar ? `اغاني ${t.artist}` : `${t.artist} songs`) : (ar ? `اغاني ${normTitle(t.title)}` : `${normTitle(t.title)} song`);
+    try { list = list.concat(clean(await searchTracks(q))); } catch (e) { }
+  }
   return list;
 }
 function parseYT(input) {
@@ -763,7 +937,8 @@ const YE = {
   },
   load(id) {
     if (!YE.ready) { YE.pending = id; YE.loadApi(); return; }
-    try { YE.p.loadVideoById({ videoId: id }); } catch (e) { }
+    YE.fresh = true;
+    try { YE.p.loadVideoById({ videoId: id, startSeconds: 0 }); } catch (e) { }
     clearTimeout(YE.tapT);
     YE.tapT = setTimeout(() => { if (PL.engine === 'yt' && !PL.playing) ytTap(true); }, 3500);
     clearInterval(YE.poll);
@@ -776,7 +951,7 @@ const YE = {
   dur() { try { return YE.p && YE.p.getDuration ? YE.p.getDuration() || 0 : 0; } catch (e) { return 0; } },
   state(s) {
     if (PL.engine !== 'yt') return;
-    if (s === 1) { ytTap(false); onPlaying(); }
+    if (s === 1) { ytTap(false); if (YE.fresh) { YE.fresh = false; if (YE.time() > 2) YE.seek(0); } onPlaying(); }
     else if (s === 2) onPaused();
     else if (s === 0) onEnded();
     else if (s === 3) setLoading(true);
@@ -819,39 +994,48 @@ function ytTap(on) {
 
 function setLoading(on) { document.body.classList.toggle('loading', !!on); }
 
-async function loadCurrent(autoplay = true, startAt = 0) {
+function playAudio(my) {
+  const p = audio.play();
+  return p && p.catch ? p.catch(e => { if (my === PL.token && e && e.name === 'NotAllowedError') { setLoading(false); onPaused(); toast('اضغط زر التشغيل ▶'); } }) : Promise.resolve();
+}
+// كل مقطع يبدأ من البداية دائماً
+async function loadCurrent(autoplay = true) {
   const t = cur(); if (!t) return;
   const my = ++PL.token;
-  PL.playing = false; PL.pendingSeek = startAt || 0;
+  PL.playing = false; PL.pendingSeek = 0;
   document.body.classList.remove('is-playing');
   setLoading(true); ytTap(false);
   renderNow(); setMeta(t); saveSession();
+  const fill = () => { if (!t.title || !t.dur) getInfo(t.id).then(i => { if (!t.title) t.title = i.title; if (!t.artist) t.artist = i.artist; if (!t.dur) t.dur = i.dur; renderNow(); setMeta(t); }); };
+  const goYT = () => { switchEngine('yt'); YE.load(t.id); fill(); };
   const pref = S().engine;
-  if (pref === 'yt') { // يجب أن يتم بشكل متزامن للحفاظ على لمسة المستخدم
-    switchEngine('yt'); YE.load(t.id);
-    if (!t.title) getInfo(t.id).then(i => { Object.assign(t, slim(i)); renderNow(); setMeta(t); });
-    maybeExtend(); return;
+  if (pref === 'yt') { goYT(); maybeExtend(); return; }
+  // 1) خادمك الخاص: فوري ويعمل بالخلفية (يتم بشكل متزامن للحفاظ على لمسة المستخدم)
+  if (srvOk()) {
+    PL.viaSrv = true; switchEngine('audio');
+    audio.src = SV.audio(t.id);
+    if (autoplay) playAudio(my); else setLoading(false);
+    warmUp(); fill(); maybeExtend(); return;
   }
+  PL.viaSrv = false;
+  // 2) الخوادم العامة معطلة مؤخراً؟ لا ننتظر — مباشرة لمشغّل يوتيوب
+  if (pref === 'auto' && Date.now() < pubDownUntil) { goYT(); maybeExtend(); return; }
+  // 3) الخوادم العامة
   try {
     const r = await resolve(t.id);
     if (my !== PL.token) return;
     if (r.track) { if (!t.title) t.title = r.track.title; if (!t.artist) t.artist = r.track.artist; if (!t.dur) t.dur = r.track.dur; renderNow(); setMeta(t); }
     switchEngine('audio');
     audio.src = r.url;
-    if (autoplay) {
-      try { await audio.play(); }
-      catch (e) { if (my === PL.token && e && e.name === 'NotAllowedError') { setLoading(false); onPaused(); toast('اضغط زر التشغيل ▶'); } }
-    } else setLoading(false);
+    if (autoplay) await playAudio(my); else setLoading(false);
   } catch (e) {
     if (my !== PL.token) return;
-    if (pref === 'auto') {
-      switchEngine('yt'); YE.load(t.id);
-      if (!t.title) getInfo(t.id).then(i => { Object.assign(t, slim(i)); renderNow(); setMeta(t); });
-    } else { setLoading(false); onPaused(); toast('تعذر تحميل الصوت — جرّب مصدراً آخر من الإعدادات'); }
+    pubDownUntil = Date.now() + 10 * 60000;
+    if (pref === 'auto') { noticeFallback(); goYT(); }
+    else { setLoading(false); onPaused(); toast('تعذر تحميل الصوت — أضف خادمك الخاص من الإعدادات'); }
   }
   maybeExtend();
 }
-
 function startQueue(tracks, idx = 0, opt = {}) {
   if (!tracks || !tracks.length) return;
   unlock();
@@ -875,9 +1059,10 @@ function toggle() {
   unlock();
   if (!cur()) return;
   if (PL.playing) { eng().pause(); return; }
-  if (PL.engine === 'audio' && (!audio.src || isSilent())) { loadCurrent(true, PL.pendingSeek || (DB.session && DB.session.pos) || 0); return; }
+  if (PL.engine === 'audio' && (!audio.src || isSilent())) { loadCurrent(true); return; }
+  if (PL.engine === 'yt' && !YE.ready) { loadCurrent(true); return; }
   const p = eng().play();
-  if (p && p.catch) p.catch(() => loadCurrent(true, AE.time()));
+  if (p && p.catch) p.catch(() => loadCurrent(true));
 }
 function next(auto = false, force = false) {
   if (!auto) unlock();
@@ -911,11 +1096,10 @@ function extend() {
     try {
       let rel = await relatedOf(seed);
       const inQ = new Set(PL.queue.map(t => t.id));
-      const titles = new Set(PL.queue.map(t => (t.title || '').toLowerCase().slice(0, 24)));
+      const titles = new Set(PL.queue.map(t => normTitle(t.title)));
       rel = rel.filter(t => t.id && !inQ.has(t.id) && !PL.played.has(t.id));
-      if (S().skipLong) rel = rel.filter(t => !t.dur || (t.dur >= 60 && t.dur <= 600));
       const out = [];
-      for (const t of rel) { const k = (t.title || '').toLowerCase().slice(0, 24); if (titles.has(k)) continue; titles.add(k); inQ.add(t.id); out.push(slim(t)); if (out.length >= 8) break; }
+      for (const t of rel) { const k = normTitle(t.title); if (k && titles.has(k)) continue; titles.add(k); inQ.add(t.id); out.push(slim(t)); if (out.length >= 10) break; }
       if (!out.length) return false;
       PL.queue.push(...out);
       saveSession(); refreshQueueSheet();
@@ -925,7 +1109,11 @@ function extend() {
   })();
   return extending;
 }
-function prefetchNext() { const n = PL.queue[PL.idx + 1]; if (n && PL.engine === 'audio' && S().engine !== 'yt') resolve(n.id).catch(() => { }); }
+function prefetchNext() {
+  const n = PL.queue[PL.idx + 1]; if (!n || S().engine === 'yt') return;
+  if (srvOk()) fetch(SV.url('prepare/' + n.id, { q: S().quality })).catch(() => { });
+  else if (PL.engine === 'audio' && Date.now() > pubDownUntil) resolve(n.id).catch(() => { });
+}
 
 function onPlaying() {
   PL.playing = true; PL.retries = 0; setLoading(false);
@@ -952,19 +1140,36 @@ audio.addEventListener('waiting', () => { if (!isSilent() && PL.engine === 'audi
 audio.addEventListener('canplay', () => { if (!isSilent() && PL.playing) setLoading(false); });
 audio.addEventListener('timeupdate', () => { if (!isSilent() && PL.engine === 'audio') onTime(); });
 audio.addEventListener('loadedmetadata', () => { if (!isSilent()) onTime(); });
-audio.addEventListener('error', () => {
-  if (isSilent() || PL.engine !== 'audio' || !audio.src) return;
+audio.addEventListener('error', async () => {
+  if (isSilent() || PL.engine !== 'audio' || !audio.getAttribute('src')) return;
   const t = cur(); if (!t) return;
+  const my = PL.token;
+  PL.retries++;
+  if (PL.viaSrv) {
+    if (PL.retries <= 1) { audio.src = SV.audio(t.id) + '&r=' + Date.now(); playAudio(my); return; }
+    PL.retries = 0;
+    srvWarmAt = 0;
+    const alive = await warmUp();
+    if (my !== PL.token) return;
+    if (!alive) { noticeFallback(); loadCurrent(true); return; }
+    try {
+      const r = await fetch(SV.url('info/' + t.id, { q: S().quality }));
+      const j = await r.json().catch(() => ({}));
+      if (j.code === 'bot') toast('يوتيوب طلب «تأكيد إنك مو روبوت» من الخادم — راجع خطوة الكوكيز في ملف اقرأني', 7000);
+    } catch (e) { }
+    if (my !== PL.token) return;
+    if (S().engine === 'auto') { switchEngine('yt'); YE.load(t.id); }
+    else { toast('تعذر تشغيل هذا المقطع — ننتقل للتالي'); next(true, true); }
+    return;
+  }
   const c = streamCache.get(t.id);
   if (c && c._base) bad.add(c._base);
   streamCache.delete(t.id);
-  PL.retries++;
-  if (PL.retries <= 2) { loadCurrent(true, AE.time()); return; }
+  if (PL.retries <= 1) { loadCurrent(true); return; }
   PL.retries = 0;
   if (S().engine === 'auto') { switchEngine('yt'); YE.load(t.id); }
   else { toast('تعذر تشغيل المقطع — ننتقل للتالي'); next(true, true); }
 });
-
 let lastSessSave = 0, lastPos = 0;
 function onTime() {
   const t = eng().time(), d = eng().dur() || (cur() && cur().dur) || 0;
@@ -1023,9 +1228,9 @@ function saveSession() {
 function restoreSession() {
   const s = DB.session;
   if (!s || !Array.isArray(s.queue) || !s.queue.length) return;
-  Object.assign(PL, { queue: s.queue, idx: Math.min(s.idx || 0, s.queue.length - 1), mode: s.mode || 'list', listId: s.listId, listName: s.listName || '', repeat: s.repeat || 'off', shuffle: !!s.shuffle, pendingSeek: s.pos || 0 });
+  Object.assign(PL, { queue: s.queue, idx: Math.min(s.idx || 0, s.queue.length - 1), mode: s.mode || 'list', listId: s.listId, listName: s.listName || '', repeat: s.repeat || 'off', shuffle: !!s.shuffle, pendingSeek: 0 });
   renderNow(); showMini(); setMeta(cur());
-  const d = cur().dur; if (d) { $('#tCur').textContent = fmt(s.pos); $('#tDur').textContent = fmt(d); const p = Math.min(100, s.pos / d * 100); $('#mProg').style.width = p + '%'; $('#seek').value = Math.round(p * 10); $('#seek').style.setProperty('--p', p + '%'); }
+  const d = cur().dur; $('#tCur').textContent = '0:00'; $('#tDur').textContent = fmt(d);
 }
 
 /* ---------------- الواجهة ---------------- */
@@ -1124,8 +1329,8 @@ function renderHome() {
   $('#v-home').innerHTML = html;
   const ph = $('#playHist'); if (ph) ph.onclick = () => startQueue(DB.history, 0, { mode: 'list', listName: 'آخر ما شغّلته', shuffle: false });
   const hp = $('[data-hero-play]');
-  if (hp) hp.onclick = e => { e.stopPropagation(); if (cur() && cur().id === last.id) toggle(); else playRadio(last); };
-  const hero = $('[data-hero]'); if (hero) hero.onclick = () => { if (cur() && cur().id === last.id) { openFP(); if (!PL.playing) toggle(); } else playRadio(last); };
+  if (hp) hp.onclick = e => { e.stopPropagation(); playRadio(last); };
+  const hero = $('[data-hero]'); if (hero) hero.onclick = () => playRadio(last);
 }
 
 /* البحث */
@@ -1141,7 +1346,7 @@ function renderSearchIdle() {
       <div class="chips">${rs.map(q => `<button class="chip" data-q="${esc(q)}">${ic('clock')}<span>${esc(q)}</span></button>`).join('')}</div>`;
   }
   html += `<div class="sec"><h2>استكشف</h2></div><div class="tiles">${TILES.map(([n, q, a, b]) => `<button class="tile" data-q="${esc(q)}" style="background:linear-gradient(135deg,${a},${b})">${n}</button>`).join('')}</div>
-    <p class="note" style="margin-top:18px">💡 تقدر تلصق رابط أي مقطع أو قائمة تشغيل من يوتيوب في خانة البحث.</p>`;
+    <p class="note" style="margin-top:18px">💡 تقدر تلصق رابط أي مقطع أو قائمة تشغيل من يوتيوب، وبعد البحث اختر «قوائم التشغيل» لعرض القوائم الكاملة.</p>`;
   $('#sBody').innerHTML = html;
   const c = $('#clrS'); if (c) c.onclick = () => { DB.searches = []; save(); renderSearchIdle(); };
 }
@@ -1151,57 +1356,150 @@ function errBox(msg, retry) {
   <p>خوادم يوتيوب البديلة قد تكون مشغولة. جرّب مرة ثانية، أو أضف مفتاح YouTube API من الإعدادات لبحث أكثر ثباتاً.</p>
   <div style="display:flex;gap:10px;justify-content:center"><button class="btn pri sm" data-retry="${esc(retry)}">إعادة المحاولة</button><button class="btn sm" data-go="set">الإعدادات</button></div></div></div>`;
 }
+/* نتائج البحث: الأغاني + قوائم التشغيل، مع تحميل المزيد تلقائياً عند النزول */
+const SR = { q: '', type: 'video', data: {}, tok: 0, detail: null, scroll: 0 };
+const newD = () => ({ items: [], next: null, loading: false, err: false, started: false });
 let searchTok = 0;
+function plRow(p, i) {
+  return `<div class="row wide plr" data-pli="${i}">
+    <div class="th">${p.img ? `<img loading="lazy" src="${esc(p.img)}" alt="">` : `<div class="cv one" style="width:100%;height:100%"><div class="ph">${ic('queue')}</div></div>`}<span class="plbadge">${ic('queue')}${p.count ? p.count : ''}</span></div>
+    <div class="meta"><div class="t">${esc(p.title)}</div><div class="s">قائمة تشغيل${p.author ? ' · ' + esc(p.author) : ''}</div></div>
+    <span class="ib" style="color:var(--dim)">${ic('chev')}</span></div>`;
+}
+function srTabs() {
+  return `<div class="stabs"><button data-st="video" class="${SR.type === 'video' ? 'on' : ''}">${ic('note')}الأغاني</button><button data-st="playlist" class="${SR.type === 'playlist' ? 'on' : ''}">${ic('queue')}قوائم التشغيل</button></div>`;
+}
+const srItemsHTML = (type, items, from = 0) => items.map((x, k) => type === 'video' ? row(x, { i: from + k, ctx: 'search', wide: true }) : plRow(x, from + k)).join('');
+function srMoreHTML(d) {
+  if (d.loading || d.next && !d.err) return '<div class="spin"></div>';
+  if (d.err) return '<button class="btn sm" id="srRetry">تحميل المزيد</button>';
+  return '<span class="note">— نهاية النتائج —</span>';
+}
+function renderResults() {
+  const d = SR.data[SR.type]; if (!d || SR.detail) return;
+  if (SR.type === 'video') ctxTracks.search = d.items;
+  let html = srTabs();
+  if (!d.items.length) {
+    if (d.loading || !d.started) html += skeleton();
+    else if (d.err) html += errBox('تعذر جلب النتائج', SR.q);
+    else html += `<div class="empty"><div class="ico">${ic('search')}</div><h3>لا توجد نتائج</h3><p>${SR.type === 'playlist' ? 'ما لقينا قوائم تشغيل لهذا البحث.' : 'جرّب كلمات أخرى.'}</p></div>`;
+  } else {
+    html += `<div class="list" id="srList">${srItemsHTML(SR.type, d.items)}</div><div class="more" id="srMore">${srMoreHTML(d)}</div>`;
+  }
+  $('#sBody').innerHTML = html;
+  observeMore();
+}
+let moreIO = null;
+function observeMore() {
+  if (moreIO) moreIO.disconnect();
+  const m = $('#srMore'); if (!m || !('IntersectionObserver' in window)) return;
+  moreIO = new IntersectionObserver(es => {
+    if (es.some(e => e.isIntersecting)) { const d = SR.data[SR.type]; if (d && d.next && !d.loading && !d.err) loadPage(SR.type, false); }
+  }, { root: $('#v-search'), rootMargin: '900px 0px' });
+  moreIO.observe(m);
+}
+async function loadPage(type, first) {
+  const d = SR.data[type]; if (!d || d.loading || (!first && !d.next)) return;
+  const my = SR.tok;
+  d.loading = true; d.err = false; d.started = true;
+  if (first && SR.type === type) renderResults();
+  let added = [], from = d.items.length;
+  try {
+    const r = await searchPage(SR.q, type, first ? null : d.next);
+    if (my !== SR.tok) return;
+    const have = new Set(d.items.map(x => x.id || x.pl));
+    added = (r.items || []).filter(x => { const k = x.id || x.pl; if (!k || have.has(k)) return false; have.add(k); return true; });
+    d.items.push(...added);
+    d.next = added.length ? r.next : null;
+  } catch (e) {
+    if (my !== SR.tok) return;
+    d.err = true; if (first) d.next = null;
+  }
+  d.loading = false;
+  if (SR.type !== type || SR.detail) return;
+  const list = $('#srList');
+  if (first || !list) { renderResults(); return; }
+  if (added.length) list.insertAdjacentHTML('beforeend', srItemsHTML(type, added, from));
+  if (type === 'video') ctxTracks.search = d.items;
+  const m = $('#srMore'); if (m) m.innerHTML = srMoreHTML(d);
+  // إذا الصفحة ما امتلأت، نكمل التحميل
+  setTimeout(observeMore, 50);
+}
+function setSearchType(t) {
+  if (SR.type === t) return;
+  SR.type = t;
+  const d = SR.data[t]; if (!d) return;
+  if (!d.started) loadPage(t, true); else renderResults();
+}
 async function doSearch(q) {
   q = String(q || '').trim(); if (!q) return renderSearchIdle();
-  const inp = $('#q'); inp.value = q; inp.blur(); $('#qClear').classList.remove('hidden'); hideSugg();
-  const my = ++searchTok;
-  const link = parseYT(q);
-  if (!link) { DB.searches = [q, ...DB.searches.filter(x => x !== q)].slice(0, 12); save(); }
-  $('#sBody').innerHTML = skeleton();
+  const inp = $('#q'); inp.value = q; inp.blur(); $('#qClear').classList.remove('hidden'); $('#qPaste').classList.add('hidden'); hideSugg();
+  const my = ++SR.tok; SR.detail = null;
   $('#v-search').scrollTop = 0;
-  try {
-    if (link && link.type === 'video') {
-      const info = await getInfo(link.id);
-      if (my !== searchTok) return;
-      ctxTracks.link = [info];
-      $('#sBody').innerHTML = `<div class="sec" style="margin-top:8px"><h2>المقطع</h2></div><div class="list">${row(info, { i: 0, ctx: 'link', wide: true })}</div>
-        <div style="display:flex;gap:10px;margin-top:12px"><button class="btn pri" style="flex:1" id="lnkPlay">${ic('play', 'f')}تشغيل</button><button class="btn" style="flex:1" id="lnkAdd">${ic('addl')}إضافة لقائمة</button></div>
-        <div id="lnkRel"></div>`;
-      $('#lnkPlay').onclick = () => startQueue([info], 0, { mode: 'radio', open: true });
-      $('#lnkAdd').onclick = () => addToPlSheet(info);
-      relatedOf(info).then(rel => {
-        if (my !== searchTok || !rel.length) return;
-        ctxTracks.search = rel.slice(0, 20);
-        $('#lnkRel').innerHTML = `<div class="sec"><h2>مقاطع مشابهة</h2></div><div class="list">${ctxTracks.search.map((t, i) => row(t, { i, ctx: 'search', wide: true })).join('')}</div>`;
-      });
-    } else if (link && link.type === 'playlist') {
-      const pl = await getYTPlaylist(link.id);
-      if (my !== searchTok) return;
-      ytplData = pl; ctxTracks.ytpl = pl.tracks;
-      const fake = { id: 'x', tracks: pl.tracks };
-      $('#sBody').innerHTML = `<div class="card plhead">${cover(fake)}<div style="flex:1;min-width:0"><div class="eyebrow">قائمة تشغيل من يوتيوب</div><b style="font-size:17px;display:block">${esc(pl.name)}</b><span class="note">${pl.tracks.length} مقطع</span></div></div>
-        <div style="display:flex;gap:10px;margin-bottom:10px"><button class="btn pri" style="flex:1" id="yplPlay">${ic('play', 'f')}تشغيل</button><button class="btn" style="flex:1" id="yplSave">${ic('dl')}حفظ في مكتبتي</button></div>
-        <div class="list">${pl.tracks.map((t, i) => row(t, { i, num: i + 1, ctx: 'ytpl' })).join('')}</div>`;
-      $('#yplPlay').onclick = () => startQueue(pl.tracks, 0, { mode: 'list', listName: pl.name, open: true });
-      $('#yplSave').onclick = async () => {
-        const name = await promptModal({ title: 'حفظ القائمة', value: pl.name, ok: 'حفظ' });
-        if (!name) return;
-        const p = { id: uid(), name, tracks: pl.tracks.map(slim), created: Date.now() };
-        DB.playlists.push(p); save(); toast('تم حفظ القائمة في مكتبتك ✓');
-      };
+  const link = parseYT(q);
+  if (link && link.type === 'playlist') { openSearchPl({ pl: link.id, title: '', author: '' }, true); return; }
+  if (link && link.type === 'video') { showLink(link, my); return; }
+  DB.searches = [q, ...DB.searches.filter(x => x !== q)].slice(0, 12); save();
+  SR.q = q; SR.data = { video: newD(), playlist: newD() };
+  loadPage(SR.type, true);
+}
+async function showLink(link, my) {
+  $('#sBody').innerHTML = skeleton(1);
+  const info = await getInfo(link.id);
+  if (my !== SR.tok) return;
+  ctxTracks.link = [info];
+  $('#sBody').innerHTML = `<div class="sec" style="margin-top:8px"><h2>المقطع</h2></div><div class="list">${row(info, { i: 0, ctx: 'link', wide: true })}</div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn pri" style="flex:1" id="lnkPlay">${ic('play', 'f')}تشغيل</button><button class="btn" style="flex:1" id="lnkAdd">${ic('addl')}إضافة لقائمة</button></div>
+    ${link.list ? `<button class="btn" style="width:100%;margin-top:10px" id="lnkList">${ic('queue')}فتح قائمة التشغيل المرتبطة</button>` : ''}
+    <div id="lnkRel"></div>`;
+  $('#lnkPlay').onclick = () => startQueue([info], 0, { mode: 'radio', open: true });
+  $('#lnkAdd').onclick = () => addToPlSheet(info);
+  const ll = $('#lnkList'); if (ll) ll.onclick = () => openSearchPl({ pl: link.list, title: '', author: '' }, true);
+  relatedOf(info).then(rel => {
+    if (my !== SR.tok || !rel.length) return;
+    ctxTracks.search = rel.filter(t => t.id !== info.id).slice(0, 30);
+    const box = $('#lnkRel'); if (!box) return;
+    box.innerHTML = `<div class="sec"><h2>مقاطع مشابهة</h2></div><div class="list">${ctxTracks.search.map((t, i) => row(t, { i, ctx: 'search', wide: true })).join('')}</div>`;
+  });
+}
+// صفحة قائمة تشغيل من يوتيوب: تشغيل بالترتيب، عشوائي، أو حفظها في مكتبتك
+async function openSearchPl(p, direct) {
+  if (!direct) SR.scroll = $('#v-search').scrollTop;
+  SR.detail = p;
+  $('#sBody').innerHTML = `${direct ? '' : `<button class="link" id="srBack" style="margin:4px 0 8px">${ic('back')}رجوع للنتائج</button>`}<div id="plDet">${skeleton(6)}</div>`;
+  $('#v-search').scrollTop = 0;
+  const bk = $('#srBack'); if (bk) bk.onclick = () => { SR.detail = null; renderResults(); $('#v-search').scrollTop = SR.scroll; };
+  let pl;
+  try { pl = await getYTPlaylist(p.pl); } catch (e) { }
+  if (SR.detail !== p) return;
+  const box = $('#plDet'); if (!box) return;
+  if (!pl || !pl.tracks || !pl.tracks.length) { box.innerHTML = errBox('تعذر فتح القائمة', SR.q || ''); return; }
+  const name = pl.name || p.title || 'قائمة تشغيل';
+  ytplData = { name, tracks: pl.tracks.map(slim) }; ctxTracks.ytpl = ytplData.tracks;
+  const total = ytplData.tracks.reduce((a, t) => a + (t.dur || 0), 0);
+  box.innerHTML = `<div class="card plhead">${cover({ id: 'x', tracks: ytplData.tracks })}<div style="flex:1;min-width:0"><div class="eyebrow">قائمة تشغيل من يوتيوب</div><b style="font-size:17px;display:block;line-height:1.4">${esc(name)}</b><span class="note">${ytplData.tracks.length} مقطع${total ? ' · ' + durText(total) : ''}${p.author || pl.author ? ' · ' + esc(p.author || pl.author) : ''}</span></div></div>
+    <div style="display:flex;gap:10px;margin-bottom:10px"><button class="btn pri" style="flex:1" id="yplPlay">${ic('play', 'f')}تشغيل</button><button class="btn" style="flex:1" id="yplShuf">${ic('shuf')}عشوائي</button></div>
+    <button class="btn" style="width:100%;margin-bottom:12px" id="yplSave">${ic('dl')}حفظ القائمة كاملة في مكتبتي</button>
+    <div class="list">${ytplData.tracks.map((t, i) => row(t, { i, num: i + 1, ctx: 'ytpl' })).join('')}</div>`;
+  $('#yplPlay').onclick = () => startQueue(ytplData.tracks, 0, { mode: 'list', listName: name, shuffle: false, open: true });
+  $('#yplShuf').onclick = () => startQueue(ytplData.tracks, Math.floor(Math.random() * ytplData.tracks.length), { mode: 'list', listName: name, shuffle: true, open: true });
+  $('#yplSave').onclick = () => saveYTPlaylist(name, ytplData.tracks);
+}
+function saveYTPlaylist(name, tracks) {
+  const mine = DB.playlists.filter(x => !x.fixed);
+  openSheet(`<div class="shead"><h3>حفظ ${tracks.length} مقطع</h3></div><div class="sbody">
+    <button class="opt" data-a="new" style="color:var(--acc)">${ic('plus')}قائمة جديدة باسم «${esc(name)}»</button>
+    ${mine.map(p => `<button class="opt" data-a="${p.id}">${ic('note')}<span style="flex:1">إضافة إلى «${esc(p.name)}»</span><span class="note">${p.tracks.length}</span></button>`).join('')}</div>`, async a => {
+    if (a === 'new') {
+      const n = await promptModal({ title: 'اسم القائمة', value: name, ok: 'حفظ' }); if (!n) return;
+      DB.playlists.push({ id: uid(), name: n, tracks: tracks.map(slim), created: Date.now() }); save();
+      toast(`تم حفظ «${n}» في مكتبتك ✓`);
     } else {
-      const res = await searchTracks(q);
-      if (my !== searchTok) return;
-      ctxTracks.search = res;
-      $('#sBody').innerHTML = res.length
-        ? `<div class="list" style="margin-top:6px">${res.map((t, i) => row(t, { i, ctx: 'search', wide: true })).join('')}</div>`
-        : `<div class="empty"><div class="ico">${ic('search')}</div><h3>لا توجد نتائج</h3><p>جرّب كلمات أخرى.</p></div>`;
+      const p = plById(a); const have = new Set(p.tracks.map(t => t.id)); let n = 0;
+      tracks.forEach(t => { if (!have.has(t.id)) { p.tracks.push(slim(t)); have.add(t.id); n++; } });
+      save(); toast(`أضيف ${n} مقطع إلى «${p.name}» ✓`);
     }
-  } catch (e) {
-    if (my !== searchTok) return;
-    $('#sBody').innerHTML = errBox('تعذر جلب النتائج', q);
-  }
+  });
 }
 let suggT = 0, suggTok = 0;
 function hideSugg() { $('#sugg').innerHTML = ''; }
@@ -1472,15 +1770,23 @@ function renderSet() {
   </div></div>
 
   <div class="grp"><h3>التشغيل</h3><div class="card">
-    ${setRow('radio', 'تشغيل أغانٍ مشابهة تلقائياً', 'عند تشغيل أغنية من البحث، يكمل بأغانٍ مشابهة بعد انتهائها', tg('radio'))}
-    ${setRow('clock', 'تجاهل المقاطع الطويلة', 'لا يقترح مقاطع أقصر من دقيقة أو أطول من 10 دقائق', tg('skipLong'))}
+    ${setRow('radio', 'تشغيل أغانٍ مشابهة تلقائياً', 'بعد أغنية من البحث يكمل بأغانٍ بنفس الأجواء (أغاني فقط، بدون مقاطع كلام)', tg('radio'))}
+    ${setRow('clock', 'تجاهل المقاطع الطويلة', 'لا يقترح مقاطع أطول من 10 دقائق (إلا إذا كانت أغنيتك نفسها طويلة)', tg('skipLong'))}
     <div class="set col"><div class="top"><div class="si">${ic('wave')}</div><div class="sl"><b>جودة الصوت</b><small>الموفّرة تستهلك بيانات أقل</small></div></div>${seg('quality', [['high', 'عالية'], ['saver', 'موفّرة للبيانات']])}</div>
-    <div class="set col"><div class="top"><div class="si">${ic('play')}</div><div class="sl"><b>طريقة التشغيل</b><small><b style="color:var(--acc2)">الصوت المباشر</b> يعمل في الخلفية ومع قفل الشاشة. <b style="color:var(--acc2)">مشغّل يوتيوب</b> أثبت لكنه يتوقف عند الخروج من التطبيق. «تلقائي» يجرب الأول ثم الثاني.</small></div></div>
+    <div class="set col"><div class="top"><div class="si">${ic('play')}</div><div class="sl"><b>طريقة التشغيل</b><small>«تلقائي» يستخدم خادمك الخاص إذا موجود، وإلا يحاول الخوادم العامة ثم مشغّل يوتيوب. <b style="color:var(--acc2)">مشغّل يوتيوب</b> فيه إعلانات ويتوقف عند الخروج من التطبيق.</small></div></div>
     ${seg('engine', [['auto', 'تلقائي'], ['audio', 'صوت مباشر'], ['yt', 'مشغّل يوتيوب']])}</div>
     <div class="set col"><div class="top"><div class="si">${ic('clock')}</div><div class="sl"><b>عدد عناصر السجل</b></div></div>${seg('histMax', [[10, '10'], [20, '20'], [30, '30']])}</div>
   </div></div>
 
-  <div class="grp"><h3>مصادر البحث والصوت</h3><div class="card">
+  <div class="grp"><h3>خادمك الخاص — تشغيل بالخلفية وبدون إعلانات</h3><div class="card">
+    <div class="set col"><div class="top"><div class="si">${ic('server')}</div><div class="sl"><b>رابط الخادم</b><small>رابط خادم نغم على Render. معه يصير التشغيل صوت فقط، بدون إعلانات، ويكمل مع قفل الشاشة.</small></div></div>
+      <input class="tx" id="sSrv" value="${esc(S().server)}" placeholder="https://nagham-xxxx.onrender.com" inputmode="url" autocapitalize="off" autocomplete="off" style="margin-top:10px"></div>
+    <div class="set col"><div class="top"><div class="si">${ic('key')}</div><div class="sl"><b>كلمة سر الخادم (اختياري)</b><small>نفس NAGHAM_KEY إذا حطيتها في الخادم</small></div></div>
+      <input class="tx" id="sSrvK" value="${esc(S().serverKey)}" placeholder="••••" autocapitalize="off" autocomplete="off" style="margin-top:10px"></div>
+    <div class="set col"><button class="btn sm" id="sSrvT" style="align-self:flex-start">${ic('check')}فحص الخادم</button><div class="testout" id="srvOut">${srv() ? (srvOk() ? '' : '<span class="bad">الخادم لم يستجب مؤخراً</span>') : 'غير مضاف — التشغيل حالياً عبر مشغّل يوتيوب أو الخوادم العامة.'}</div></div>
+  </div></div>
+
+  <div class="grp"><h3>مصادر احتياطية</h3><div class="card">
     <div class="set col"><div class="top"><div class="si">${ic('server')}</div><div class="sl"><b>المصدر</b><small>خوادم مفتوحة المصدر تجلب نتائج وصوت يوتيوب</small></div></div>${seg('source', [['auto', 'تلقائي'], ['piped', 'Piped'], ['inv', 'Invidious']])}</div>
     <div class="set col"><div class="top"><div class="si">${ic('link')}</div><div class="sl"><b>خادم مخصص (اختياري)</b><small>رابط خادم Piped API أو Invidious تثق فيه</small></div></div>
       <input class="tx" id="sCustom" value="${esc(S().custom)}" placeholder="https://..." inputmode="url" autocapitalize="off" style="margin-top:10px"></div>
@@ -1498,13 +1804,32 @@ function renderSet() {
   </div></div>
 
   <div class="grp"><h3>حول</h3><div class="card">
-    ${setRow('info', 'نغم 1.0', 'كل مستخدم يحفظ قوائمه وسجله على جهازه بشكل مستقل. المحتوى من يوتيوب عبر خوادم عامة، وقد يتعذر تشغيل بعض المقاطع.')}
+    ${setRow('info', 'نغم 2.0', 'كل مستخدم يحفظ قوائمه وسجله على جهازه بشكل مستقل. المحتوى من يوتيوب عبر خوادم عامة، وقد يتعذر تشغيل بعض المقاطع.')}
   </div></div>`;
 
   $('#sName').onchange = e => { DB.name = e.target.value.trim(); save(); };
   $('#sCustom').onchange = e => { S().custom = norm(e.target.value); save(); toast('تم الحفظ'); };
   $('#sKey').onchange = e => { S().ytKey = e.target.value.trim(); save(); toast('تم حفظ المفتاح'); };
   $('#sTest').onclick = testSources;
+  $('#sSrv').onchange = e => { S().server = norm(e.target.value); srvDownUntil = 0; fbNoticed = false; save(); testServer(); };
+  $('#sSrvK').onchange = e => { S().serverKey = e.target.value.trim(); srvDownUntil = 0; save(); testServer(); };
+  $('#sSrvT').onclick = testServer;
+}
+async function testServer() {
+  const out = $('#srvOut'); if (!out) return;
+  if (!srv()) { out.innerHTML = 'اكتب رابط الخادم أولاً.'; return; }
+  if (!/^https:/.test(srv()) && location.protocol === 'https:') { out.innerHTML = '<span class="bad">لازم يبدأ الرابط بـ https://</span>'; return; }
+  out.innerHTML = '<div class="spin" style="width:22px;height:22px;border-width:2px"></div>';
+  try {
+    out.innerHTML += '<div>جاري الاتصال… إذا الخادم نايم ياخذ حتى دقيقة</div>';
+    srvWarmAt = 0; srvDownUntil = 0;
+    if (!(await warmUp())) throw new Error('down');
+    await SV.get('suggest', { q: 'music' }, 15000);
+    srvDownUntil = 0; fbNoticed = false;
+    out.innerHTML = '<span class="ok">✓ الخادم شغال — التشغيل الآن بالخلفية وبدون إعلانات</span>';
+  } catch (e) {
+    out.innerHTML = String(e && e.message).includes('401') ? '<span class="bad">✗ كلمة السر غير صحيحة</span>' : '<span class="bad">✗ ما قدرنا نوصل للخادم. تأكد إنه شغال وإن الرابط صحيح.</span>';
+  }
 }
 async function testSources() {
   const out = $('#testOut'); out.innerHTML = '<div class="spin" style="width:22px;height:22px;border-width:2px"></div>';
@@ -1553,6 +1878,9 @@ function listClick(e) {
   const retry = e.target.closest('[data-retry]'); if (retry) { doSearch(retry.dataset.retry); return; }
   const qb = e.target.closest('[data-q]'); if (qb) { doSearch(qb.dataset.q); return; }
   const plb = e.target.closest('[data-pl]'); if (plb) { openPl(plb.dataset.pl); return; }
+  const st = e.target.closest('[data-st]'); if (st) { setSearchType(st.dataset.st); return; }
+  if (e.target.closest('#srRetry')) { const d = SR.data[SR.type]; d.err = false; if (!d.items.length) loadPage(SR.type, true); else { $('#srMore').innerHTML = '<div class="spin"></div>'; loadPage(SR.type, false); } return; }
+  const plr = e.target.closest('.plr'); if (plr) { const p = (SR.data.playlist || {}).items[+plr.dataset.pli]; if (p) openSearchPl(p); return; }
   const r = e.target.closest('.row'); if (!r) return;
   const ctx = r.dataset.ctx, i = +r.dataset.i;
   let list;
@@ -1566,12 +1894,12 @@ function listClick(e) {
   if (ctx === 'pl') {
     if (plEdit) return;
     const p = plById(plOpen);
-    if (cur() && cur().id === t.id && PL.listId === p.id) { openFP(); if (!PL.playing) toggle(); return; }
+    if (cur() && cur().id === t.id && PL.listId === p.id && PL.playing) { openFP(); return; }
     startQueue(p.tracks, i, { mode: 'list', listId: p.id, listName: p.name });
   } else if (ctx === 'ytpl') {
     startQueue(list, i, { mode: 'list', listName: ytplData ? ytplData.name : 'قائمة يوتيوب' });
   } else {
-    if (cur() && cur().id === t.id) { openFP(); if (!PL.playing) toggle(); return; }
+    if (cur() && cur().id === t.id && PL.playing) { openFP(); return; }
     playRadio(t);
   }
 }
@@ -1671,8 +1999,47 @@ sk.addEventListener('change', () => {
     el.addEventListener('touchend', e => { if (y0 == null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; f.style.transition = ''; f.style.transform = ''; if (dy > 110) closeFP(); });
   });
 })();
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { onTime(); updatePlayBtns(); } else saveSession(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { onTime(); updatePlayBtns(); warmUp(); } else saveSession(); });
 window.addEventListener('pagehide', () => saveSession());
+
+/* شاشة البداية: تنتظر لين يصحى الخادم ثم تفتح التطبيق */
+async function runSplash() {
+  const sp = $('#splash'), st = $('#spStatus');
+  $$('.sp-wave i').forEach((b, i) => b.style.animationDelay = (-(i % 5) * 0.18 - i * 0.07) + 's');
+  const dust = $('#spDust');
+  for (let i = 0; i < 18; i++) {
+    const d = document.createElement('i');
+    d.style.left = (Math.random() * 100) + '%';
+    d.style.animationDuration = (6 + Math.random() * 7) + 's';
+    d.style.animationDelay = (-Math.random() * 10) + 's';
+    d.style.transform = 'scale(' + (0.5 + Math.random()) + ')';
+    dust.appendChild(d);
+  }
+  const t0 = Date.now();
+  const h = new Date().getHours();
+  st.textContent = (h < 12 ? 'صباح الخير' : 'مساء الخير') + (DB.name ? '، ' + DB.name : '');
+  if (srv()) {
+    const msgs = ['نجهّز لك الموسيقى…', 'نوقظ الخادم من النوم…', 'لحظات ويكون جاهز…', 'تقريباً وصلنا…', 'شكله نومه ثقيل اليوم 😅'];
+    let mi = 0;
+    const rot = setInterval(() => { st.style.opacity = 0; setTimeout(() => { st.textContent = msgs[Math.min(mi++, msgs.length - 1)]; st.style.opacity = 1; }, 300); }, 4500);
+    setTimeout(() => { st.style.opacity = 0; setTimeout(() => { st.textContent = msgs[mi++]; st.style.opacity = 1; }, 300); }, 1300);
+    const skipT = setTimeout(() => $('#spSkip').classList.add('show'), 8000);
+    let skip; const skipped = new Promise(r => skip = r);
+    $('#spSkip').onclick = () => skip('skip');
+    const res = await Promise.race([warmUp(), skipped, sleep(80000).then(() => false)]);
+    clearInterval(rot); clearTimeout(skipT);
+    st.style.opacity = 1;
+    st.textContent = res === true ? 'جاهز ✓' : res === 'skip' ? '' : 'الخادم ما رد — بنكمل بالطريقة الاحتياطية';
+    if (res === 'skip') warmUp();
+  }
+  const wait = Math.max(0, 1700 - (Date.now() - t0));
+  await sleep(wait);
+  sp.classList.add('ready');
+  await sleep(450);
+  sp.classList.add('out');
+  splashOn = false;
+  setTimeout(() => sp.remove(), 900);
+}
 
 /* ---------------- التشغيل الأولي ---------------- */
 applyAccent();
@@ -1682,6 +2049,7 @@ showTab('home');
 handleHash();
 setTimeout(() => YE.loadApi(), 1500);
 refreshInstanceLists();
+runSplash();
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { });
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
 </script>
