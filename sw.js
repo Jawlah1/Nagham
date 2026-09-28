@@ -1,5 +1,5 @@
 // نغم — Service Worker: يحفظ واجهة التطبيق فقط (بدون الصوتيات أو نتائج البحث)
-const CACHE = 'nagham-v4';
+const CACHE = 'nagham-v5';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/apple-touch-icon.png', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {

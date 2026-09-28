@@ -517,7 +517,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;bac
    ===================================================================== */
 const DEFAULT_YT_KEY = '';
 // رابط خادمك الخاص (nagham_server.py) إذا تبيه يشتغل لكل من يفتح التطبيق بدون إعداد:
-const DEFAULT_SERVER = 'https://nagham-server.onrender.com/';   // مثال: 'https://nagham-server.onrender.com'
+const DEFAULT_SERVER = 'https://nagham-server.onrender.com';
 const DEFAULT_SERVER_KEY = '';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -668,6 +668,19 @@ function warmUp() {
     .catch(() => { srvFail(); return false; })
     .finally(() => { clearTimeout(slow); warming = null; });
   return warming;
+}
+const prepared = new Set();
+async function srvPrepare(id, ms = 60000) {
+  if (!(await warmUp())) return { ok: false, code: 'down' };
+  const c = new AbortController(); const tm = setTimeout(() => c.abort(), ms);
+  try {
+    const r = await fetch(SV.url('prepare/' + id, { q: S().quality }), { signal: c.signal });
+    const j = await r.json().catch(() => ({}));
+    srvWarmAt = Date.now();
+    if (r.ok && j.ok) { prepared.add(id); return { ok: true }; }
+    return { ok: false, code: j.code || 'fail', err: j.error };
+  } catch (e) { return { ok: false, code: 'timeout' }; }
+  finally { clearTimeout(tm); }
 }
 function noticeFallback() {
   if (fbNoticed) return; fbNoticed = true;
@@ -1012,10 +1025,24 @@ async function loadCurrent(autoplay = true) {
   if (pref === 'yt') { goYT(); maybeExtend(); return; }
   // 1) خادمك الخاص: فوري ويعمل بالخلفية (يتم بشكل متزامن للحفاظ على لمسة المستخدم)
   if (srvOk()) {
-    PL.viaSrv = true; switchEngine('audio');
+    PL.viaSrv = true; switchEngine('audio'); fill();
+    // مجهّزة مسبقاً؟ نشغلها فوراً (مهم للتنقل التلقائي والشاشة مقفلة)
+    if (!prepared.has(t.id)) {
+      const slow = setTimeout(() => { if (my === PL.token && !PL.playing) toast('الخادم يجهّز الأغنية… أول مرة تاخذ ثواني', 5000); }, 4000);
+      const r = await srvPrepare(t.id, 90000);
+      clearTimeout(slow);
+      if (my !== PL.token) return;
+      if (!r.ok) {
+        if (r.code === 'bot') toast('يوتيوب طلب «تأكيد إنك مو روبوت» من الخادم — راجع خطوة الكوكيز', 7000);
+        else if (r.code === 'down') { srvFail(); noticeFallback(); }
+        else toast('تعذر تجهيز هذي الأغنية من الخادم', 4000);
+        if (pref === 'auto') { goYT(); maybeExtend(); return; }
+        setLoading(false); onPaused(); next(true, true); return;
+      }
+    }
     audio.src = SV.audio(t.id);
     if (autoplay) playAudio(my); else setLoading(false);
-    warmUp(); fill(); maybeExtend(); return;
+    maybeExtend(); return;
   }
   PL.viaSrv = false;
   // 2) الخوادم العامة معطلة مؤخراً؟ لا ننتظر — مباشرة لمشغّل يوتيوب
@@ -1111,7 +1138,7 @@ function extend() {
 }
 function prefetchNext() {
   const n = PL.queue[PL.idx + 1]; if (!n || S().engine === 'yt') return;
-  if (srvOk()) fetch(SV.url('prepare/' + n.id, { q: S().quality })).catch(() => { });
+  if (srvOk()) { if (!prepared.has(n.id)) srvPrepare(n.id, 120000); }
   else if (PL.engine === 'audio' && Date.now() > pubDownUntil) resolve(n.id).catch(() => { });
 }
 
@@ -1146,6 +1173,7 @@ audio.addEventListener('error', async () => {
   const my = PL.token;
   PL.retries++;
   if (PL.viaSrv) {
+    prepared.delete(t.id);
     if (PL.retries <= 1) { audio.src = SV.audio(t.id) + '&r=' + Date.now(); playAudio(my); return; }
     PL.retries = 0;
     srvWarmAt = 0;
