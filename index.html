@@ -167,6 +167,11 @@ form.sbar .ib{width:32px;height:32px;color:var(--mute)}
 .plbadge svg{width:13px;height:13px}
 .more{display:flex;justify-content:center;padding:18px 0 8px;min-height:60px}
 .more .spin{width:28px;height:28px;border-width:3px}
+.dlmark svg{width:13px;height:13px;color:var(--acc);vertical-align:-2px;margin-inline-end:4px;stroke-width:2.4}
+.offl{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 0 14px}
+.offl .si{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--card2);color:var(--acc);flex:none}
+.offl .si svg{width:19px;height:19px}
+.offl .sl{flex:1;min-width:0}.offl b{display:block;font-size:15px}.offl small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px;line-height:1.55}
 /* Library */
 .lrow{display:flex;align-items:center;gap:14px;padding:9px 0}
 .lrow .cv{width:64px;height:64px;border-radius:14px}
@@ -539,7 +544,7 @@ const slim = t => ({ id: t.id, title: t.title || '', artist: t.artist || '', dur
 /* ---------------- التخزين (خاص بكل جهاز) ---------------- */
 const KEY = 'nagham.v1';
 const DEF = {
-  name: '', history: [], playlists: [], searches: [], session: null,
+  name: '', history: [], playlists: [], searches: [], session: null, dl: {},
   settings: { accent: 'gold', radio: true, skipLong: true, quality: 'high', engine: 'auto', source: 'auto', ytKey: '', custom: '', histMax: 10, server: '', serverKey: '' },
   inst: { piped: null, inv: null, listPiped: [], listInv: [], listAt: 0 }
 };
@@ -550,6 +555,7 @@ function load() {
   const o = Object.assign(JSON.parse(JSON.stringify(DEF)), d);
   o.settings = Object.assign({}, DEF.settings, d.settings || {});
   o.inst = Object.assign({}, DEF.inst, d.inst || {});
+  if (!o.dl || typeof o.dl !== 'object') o.dl = {};
   if (!Array.isArray(o.playlists)) o.playlists = [];
   if (!o.playlists.find(p => p.id === 'fav')) o.playlists.unshift({ id: 'fav', name: 'المفضلة', tracks: [], fixed: true });
   return o;
@@ -559,7 +565,9 @@ function save(now) {
   clearTimeout(saveT);
   const f = () => { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch (e) { toast('تعذر الحفظ — مساحة التخزين ممتلئة'); } };
   now ? f() : saveT = setTimeout(f, 200);
+  try { dlSyncSoon(); } catch (e) { }
 }
+function saveQuiet() { clearTimeout(saveT); try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch (e) { } }
 const S = () => DB.settings;
 const ytKey = () => (S().ytKey || DEFAULT_YT_KEY || '').trim();
 
@@ -1022,6 +1030,23 @@ async function loadCurrent(autoplay = true) {
   const fill = () => { if (!t.title || !t.dur) getInfo(t.id).then(i => { if (!t.title) t.title = i.title; if (!t.artist) t.artist = i.artist; if (!t.dur) t.dur = i.dur; renderNow(); setMeta(t); }); };
   const goYT = () => { switchEngine('yt'); YE.load(t.id); fill(); };
   const pref = S().engine;
+  // 0) محفوظة على الجهاز؟ تشتغل فوراً وبدون إنترنت
+  if (isDl(t.id) && !PL.skipLocal) {
+    try {
+      const rec = await IDB.get(t.id);
+      if (my !== PL.token) return;
+      if (rec && rec.blob) {
+        PL.local = true; PL.viaSrv = false; switchEngine('audio');
+        const old = PL.objUrl; PL.objUrl = URL.createObjectURL(rec.blob);
+        audio.src = PL.objUrl; if (old) URL.revokeObjectURL(old);
+        if (autoplay) playAudio(my); else setLoading(false);
+        maybeExtend(); return;
+      }
+    } catch (e) { }
+    if (my !== PL.token) return;
+    delete DB.dl[t.id]; saveQuiet();
+  }
+  PL.local = false; PL.skipLocal = false;
   if (pref === 'yt') { goYT(); maybeExtend(); return; }
   // 1) خادمك الخاص: فوري ويعمل بالخلفية (يتم بشكل متزامن للحفاظ على لمسة المستخدم)
   if (srvOk()) {
@@ -1029,7 +1054,9 @@ async function loadCurrent(autoplay = true) {
     // مجهّزة مسبقاً؟ نشغلها فوراً (مهم للتنقل التلقائي والشاشة مقفلة)
     if (!prepared.has(t.id)) {
       const slow = setTimeout(() => { if (my === PL.token && !PL.playing) toast('الخادم يجهّز الأغنية… أول مرة تاخذ ثواني', 5000); }, 4000);
+      PL.srvBusy = true;
       const r = await srvPrepare(t.id, 90000);
+      PL.srvBusy = false;
       clearTimeout(slow);
       if (my !== PL.token) return;
       if (!r.ok) {
@@ -1137,7 +1164,7 @@ function extend() {
   return extending;
 }
 function prefetchNext() {
-  const n = PL.queue[PL.idx + 1]; if (!n || S().engine === 'yt') return;
+  const n = PL.queue[PL.idx + 1]; if (!n || S().engine === 'yt' || isDl(n.id)) return;
   if (srvOk()) { if (!prepared.has(n.id)) srvPrepare(n.id, 120000); }
   else if (PL.engine === 'audio' && Date.now() > pubDownUntil) resolve(n.id).catch(() => { });
 }
@@ -1171,6 +1198,7 @@ audio.addEventListener('error', async () => {
   if (isSilent() || PL.engine !== 'audio' || !audio.getAttribute('src')) return;
   const t = cur(); if (!t) return;
   const my = PL.token;
+  if (PL.local) { PL.local = false; PL.skipLocal = true; delete DB.dl[t.id]; IDB.del(t.id).catch(() => { }); saveQuiet(); dlSyncSoon(); loadCurrent(true); return; }
   PL.retries++;
   if (PL.viaSrv) {
     prepared.delete(t.id);
@@ -1261,6 +1289,104 @@ function restoreSession() {
   const d = cur().dur; $('#tCur').textContent = '0:00'; $('#tDur').textContent = fmt(d);
 }
 
+/* ---------------- التنزيلات: أغاني القوائم محفوظة على الجهاز ---------------- */
+const IDB = {
+  p: null,
+  open() {
+    if (IDB.p) return IDB.p;
+    IDB.p = new Promise((res, rej) => {
+      const r = indexedDB.open('nagham-audio', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('songs');
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => { IDB.p = null; rej(r.error); };
+    });
+    return IDB.p;
+  },
+  async tx(mode, fn) {
+    const db = await IDB.open();
+    return new Promise((res, rej) => {
+      const t = db.transaction('songs', mode); const r = fn(t.objectStore('songs'));
+      t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  },
+  get: id => IDB.tx('readonly', s => s.get(id)),
+  put: (id, v) => IDB.tx('readwrite', s => s.put(v, id)),
+  del: id => IDB.tx('readwrite', s => s.delete(id)),
+  keys: () => IDB.tx('readonly', s => s.getAllKeys()),
+  clear: () => IDB.tx('readwrite', s => s.clear())
+};
+const DL = { q: [], busy: false, fail: {}, cur: null };
+const isDl = id => !!DB.dl[id];
+function neededIds() { const n = new Set(); DB.playlists.forEach(p => { if (p.offline) p.tracks.forEach(t => n.add(t.id)); }); return n; }
+let dlSyncT = 0;
+function dlSyncSoon() { clearTimeout(dlSyncT); dlSyncT = setTimeout(dlSync, 1500); }
+function dlSync() {
+  const need = neededIds();
+  let changed = false;
+  for (const id of Object.keys(DB.dl)) if (!need.has(id)) { delete DB.dl[id]; IDB.del(id).catch(() => { }); changed = true; }
+  DL.q = DL.q.filter(id => need.has(id));
+  for (const id of need) if (!isDl(id) && !DL.q.includes(id) && DL.cur !== id && (DL.fail[id] || 0) < 3) DL.q.push(id);
+  if (changed) { saveQuiet(); dlUI(); }
+  dlRun();
+}
+async function dlRun() {
+  if (DL.busy || !DL.q.length || !srv()) return;
+  DL.busy = true;
+  while (DL.q.length) {
+    while (PL.srvBusy) await sleep(1500); // الأولوية للأغنية اللي تشغلها الحين
+    const id = DL.q.shift();
+    if (isDl(id) || !neededIds().has(id)) continue;
+    DL.cur = id; dlUI();
+    try {
+      if (!(await warmUp())) throw new Error('down');
+      const c = new AbortController(); const tm = setTimeout(() => c.abort(), 240000);
+      let r;
+      try { r = await fetch(SV.url('dl/' + id), { signal: c.signal }); } finally { clearTimeout(tm); }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const b = await r.blob();
+      if (b.size < 20000) throw new Error('small');
+      if (neededIds().has(id)) {
+        await IDB.put(id, { blob: new Blob([b], { type: 'audio/mp4' }), t: Date.now() });
+        DB.dl[id] = b.size; saveQuiet();
+      }
+    } catch (e) {
+      const m = String(e && (e.name + ' ' + e.message));
+      if (/Quota/i.test(m)) { toast('مساحة الجهاز ما تكفي لتنزيل المزيد', 5000); DL.q = []; break; }
+      if (/down/.test(m)) { DL.q.unshift(id); break; }
+      DL.fail[id] = (DL.fail[id] || 0) + 1;
+      if (DL.fail[id] < 3) DL.q.push(id);
+    }
+  }
+  DL.cur = null; DL.busy = false; dlUI();
+}
+function dlStats() { const ids = Object.keys(DB.dl); return { n: ids.length, bytes: ids.reduce((a, i) => a + (+DB.dl[i] || 0), 0) }; }
+const mb = b => (b / 1048576).toFixed(b > 104857600 ? 0 : 1);
+function plDlText(p) {
+  if (!p.offline) return 'نزّل أغاني القائمة على جهازك عشان تشتغل فوراً وحتى بدون إنترنت';
+  const n = p.tracks.length, done = p.tracks.filter(t => isDl(t.id)).length;
+  if (done >= n) return `✓ كل الأغاني (${n}) محفوظة على جهازك`;
+  const now = DL.cur && p.tracks.some(t => t.id === DL.cur);
+  return `تم تنزيل ${done} من ${n}${now ? ' · جاري التنزيل…' : DL.q.length ? ' · بالانتظار…' : ''} — خل التطبيق مفتوح لين يخلص`;
+}
+function dlUI() {
+  const info = $('#plDlInfo'); const p = plOpen && plById(plOpen);
+  if (info && p) info.textContent = plDlText(p);
+  $$('.row').forEach(r => {
+    const s = $('.s', r); if (!s) return;
+    const has = !!$('.dlmark', s), want = isDl(r.dataset.id) && r.dataset.ctx !== 'search';
+    if (want && !has) s.insertAdjacentHTML('afterbegin', `<span class="dlmark">${ic('dl')}</span>`);
+    if (!want && has) $('.dlmark', s).remove();
+  });
+}
+function initDownloads() {
+  IDB.keys().then(keys => {
+    const k = new Set(keys);
+    for (const id of Object.keys(DB.dl)) if (!k.has(id)) delete DB.dl[id];
+    for (const id of keys) if (!DB.dl[id]) DB.dl[id] = 1;
+    saveQuiet(); dlSync();
+  }).catch(() => { });
+}
+
 /* ---------------- الواجهة ---------------- */
 let curTab = 'home', plOpen = null, plEdit = false;
 const ctxTracks = { search: [], link: [], ytpl: [] };
@@ -1311,7 +1437,7 @@ function row(t, o = {}) {
   return `<div class="row${o.wide ? ' wide' : ''}${now ? ' now' : ''}" data-id="${esc(t.id)}" data-i="${o.i ?? ''}" data-ctx="${esc(o.ctx || '')}">
     ${o.num != null ? `<div class="num">${o.num}</div>` : ''}
     <div class="th"><img loading="lazy" src="${thumb(t.id)}" alt="">${t.dur && o.wide ? `<span class="dur">${fmt(t.dur)}</span>` : ''}${now ? `<span class="thnow">${eqH}</span>` : ''}</div>
-    <div class="meta"><div class="t">${esc(t.title || 'بدون عنوان')}</div><div class="s">${esc(sub)}${!o.wide && t.dur ? `<span style="direction:ltr;display:inline-block;margin-inline-start:4px">${sub ? '· ' : ''}${fmt(t.dur)}</span>` : ''}</div></div>
+    <div class="meta"><div class="t">${esc(t.title || 'بدون عنوان')}</div><div class="s">${isDl(t.id) && o.ctx !== 'search' ? `<span class="dlmark">${ic('dl')}</span>` : ''}${esc(sub)}${!o.wide && t.dur ? `<span style="direction:ltr;display:inline-block;margin-inline-start:4px">${sub ? '· ' : ''}${fmt(t.dur)}</span>` : ''}</div></div>
     ${o.grip ? `<button class="grip" aria-label="سحب لإعادة الترتيب">${ic('grip')}</button>` : ''}
     ${o.rm ? `<button class="ib" data-act="rm" aria-label="حذف">${ic('x')}</button>` : `<button class="ib" data-act="more" aria-label="خيارات">${ic('more')}</button>`}
   </div>`;
@@ -1551,7 +1677,7 @@ function onQInput() {
 function renderLib() {
   const pls = DB.playlists;
   $('#v-lib').innerHTML = `<div class="topbar"><h1 class="lt">مكتبتي</h1><button class="ib acc" id="newPl" aria-label="قائمة جديدة" style="margin-bottom:18px">${ic('plus')}</button></div>
-    <div class="list">${pls.map(p => `<div class="lrow" data-pl="${p.id}">${cover(p)}<div class="meta"><b>${esc(p.name)}</b><span>${p.tracks.length} مقطع${p.tracks.length ? ' · ' + durText(plDur(p)) : ''}</span></div>${ic('chev')}</div>`).join('')}</div>
+    <div class="list">${pls.map(p => `<div class="lrow" data-pl="${p.id}">${cover(p)}<div class="meta"><b>${esc(p.name)}</b><span>${p.offline ? `<span class="dlmark">${ic('dl')}</span>` : ''}${p.tracks.length} مقطع${p.tracks.length ? ' · ' + durText(plDur(p)) : ''}</span></div>${ic('chev')}</div>`).join('')}</div>
     ${pls.length <= 1 ? `<div class="empty"><p>أنشئ قائمتك الأولى بالضغط على +<br>ثم أضف لها أغاني من البحث عبر زر ⋯</p><button class="btn pri" id="newPl2">${ic('plus')}قائمة جديدة</button></div>` : ''}`;
   $('#newPl').onclick = newPlaylist;
   const n2 = $('#newPl2'); if (n2) n2.onclick = newPlaylist;
@@ -1575,12 +1701,22 @@ function renderPl() {
     ${cover(p, 'plv-cover')}
     <h2 class="plv-name">${esc(p.name)}</h2>
     <div class="plv-meta">${n} مقطع${n ? ' · ' + durText(plDur(p)) : ''}</div>
-    ${n ? `<div class="plv-acts"><button class="btn pri" id="plPlay">${ic('play', 'f')}تشغيل</button><button class="btn" id="plShuf">${ic('shuf')}عشوائي</button></div>` : ''}
+    ${n ? `<div class="plv-acts"><button class="btn pri" id="plPlay">${ic('play', 'f')}تشغيل</button><button class="btn" id="plShuf">${ic('shuf')}عشوائي</button></div>
+    <div class="card offl"><div class="si">${ic('dl')}</div><div class="sl"><b>متاحة بدون إنترنت</b><small id="plDlInfo">${plDlText(p)}</small></div><button class="tg${p.offline ? ' on' : ''}" id="plOffl" aria-label="تنزيل"></button></div>` : ''}
     <div class="list" id="plList">${p.tracks.map((t, i) => row(t, { i, num: plEdit ? null : i + 1, ctx: 'pl', grip: plEdit, rm: plEdit })).join('')}</div>
     ${!n ? `<div class="empty"><div class="ico">${ic('note')}</div><h3>القائمة فارغة</h3><p>ابحث عن أغنية واضغط ⋯ ثم «إضافة إلى قائمة تشغيل».</p><button class="btn pri" data-go="search">${ic('search')}ابحث الآن</button></div>` : ''}`;
   $('#plBack').onclick = () => { plOpen = null; showTab('lib'); };
   const e = $('#plEditB'); if (e) e.onclick = () => { plEdit = !plEdit; renderPl(); };
   const m = $('#plMore'); if (m) m.onclick = () => plMenu(p);
+  const of = $('#plOffl'); if (of) of.onclick = async () => {
+    if (p.offline) {
+      if (!(await confirmModal({ title: 'إلغاء التنزيل؟', text: 'بتنحذف أغاني هذي القائمة من جهازك (وتظل موجودة في القائمة).', ok: 'حذف التنزيلات', danger: true }))) return;
+      p.offline = false; saveQuiet(); dlSync(); renderPl(); toast('تم حذف التنزيلات');
+    } else {
+      if (!srv()) { toast('التنزيل يحتاج الخادم — أضفه من الإعدادات'); return; }
+      p.offline = true; saveQuiet(); dlSync(); renderPl(); toast('بدأ التنزيل — خل التطبيق مفتوح لين يخلص', 4000);
+    }
+  };
   const pp = $('#plPlay'); if (pp) pp.onclick = () => startQueue(p.tracks, 0, { mode: 'list', listId: p.id, listName: p.name, shuffle: false });
   const ps = $('#plShuf'); if (ps) ps.onclick = () => startQueue(p.tracks, Math.floor(Math.random() * n), { mode: 'list', listId: p.id, listName: p.name, shuffle: true });
   if (plEdit) sortable($('#plList'), (from, to) => { p.tracks.splice(to, 0, p.tracks.splice(from, 1)[0]); save(); renderPl(); });
@@ -1826,6 +1962,7 @@ function renderSet() {
   <div class="grp"><h3>البيانات (محفوظة على هذا الجهاز فقط)</h3><div class="card">
     <div class="set tap" data-do="export"><div class="si">${ic('up')}</div><div class="sl"><b>نسخة احتياطية</b><small>احفظ قوائمك في ملف لنقلها لجهاز آخر</small></div>${ic('chev')}</div>
     <div class="set tap" data-do="import"><div class="si">${ic('dl')}</div><div class="sl"><b>استعادة من نسخة</b><small>تُدمج القوائم مع الموجودة</small></div>${ic('chev')}</div>
+    <div class="set tap" data-do="clrDl"><div class="si">${ic('dl')}</div><div class="sl"><b>الأغاني المحفوظة على الجهاز</b><small>${dlStats().n ? `${dlStats().n} أغنية · ${mb(dlStats().bytes)} م.ب — اضغط لحذفها كلها` : 'لا يوجد — فعّل «متاحة بدون إنترنت» من داخل أي قائمة'}</small></div></div>
     <div class="set tap" data-do="clrH"><div class="si">${ic('clock')}</div><div class="sl"><b>مسح سجل التشغيل</b></div></div>
     <div class="set tap" data-do="clrS"><div class="si">${ic('search')}</div><div class="sl"><b>مسح عمليات البحث</b></div></div>
     <div class="set tap" data-do="wipe"><div class="si" style="color:var(--danger)">${ic('trash')}</div><div class="sl"><b style="color:var(--danger)">حذف كل البيانات</b></div></div>
@@ -1960,6 +2097,9 @@ $('#v-set').addEventListener('click', async e => {
   const act = d.dataset.do;
   if (act === 'export') exportData();
   if (act === 'import') $('#fileIn').click();
+  if (act === 'clrDl' && dlStats().n && await confirmModal({ title: 'حذف كل التنزيلات؟', text: 'الأغاني تظل في قوائمك، بس تنحذف نسختها المحفوظة من الجهاز.', ok: 'حذف', danger: true })) {
+    DB.playlists.forEach(p => p.offline = false); DB.dl = {}; DL.q = []; saveQuiet(); IDB.clear().catch(() => { }); toast('تم حذف التنزيلات'); renderSet();
+  }
   if (act === 'clrH' && await confirmModal({ title: 'مسح السجل؟', ok: 'مسح', danger: true })) { DB.history = []; save(); toast('تم مسح السجل'); }
   if (act === 'clrS') { DB.searches = []; save(); toast('تم المسح'); renderSearchIdle(); }
   if (act === 'wipe' && await confirmModal({ title: 'حذف كل البيانات؟', text: 'سيتم حذف كل القوائم والسجل والإعدادات من هذا الجهاز. لا يمكن التراجع.', ok: 'حذف الكل', danger: true })) {
@@ -2027,7 +2167,7 @@ sk.addEventListener('change', () => {
     el.addEventListener('touchend', e => { if (y0 == null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; f.style.transition = ''; f.style.transform = ''; if (dy > 110) closeFP(); });
   });
 })();
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { onTime(); updatePlayBtns(); warmUp(); } else saveSession(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { onTime(); updatePlayBtns(); warmUp(); dlRun(); } else saveSession(); });
 window.addEventListener('pagehide', () => saveSession());
 
 /* شاشة البداية: تنتظر لين يصحى الخادم ثم تفتح التطبيق */
@@ -2078,6 +2218,7 @@ handleHash();
 setTimeout(() => YE.loadApi(), 1500);
 refreshInstanceLists();
 runSplash();
+initDownloads();
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { });
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
 </script>
